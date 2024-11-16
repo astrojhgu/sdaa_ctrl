@@ -1,0 +1,12 @@
+[package]
+name = "sdand_ctrl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+binrw = "0.14.1"
+rayon = '1.10.0'
+crossbeam = '0.8.4'
+clap = { version = '4.5.21', features = ['derive'] }
+serde = { version = '1.0.144', features = ['derive'] }
+serde_yaml = '0.9.13'
