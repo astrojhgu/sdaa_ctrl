@@ -26,7 +26,16 @@ pub enum CtrlMsg {
     #[brw(magic(0x01_u32))]
     Query { msg_id: u32 },
     #[brw(magic(0xff_00_00_01_u32))]
-    QueryReply { msg_id: u32 },
+    QueryReply {
+        msg_id: u32,
+        fm_ver: u32,
+        tick_cnt1: u32,
+        tick_cnt2: u32,
+        locked: u32,
+        nhealth: u32,
+        #[br(count = nhealth)]
+        values: Vec<u32>,
+    },
     #[brw(magic(0x02_u32))]
     Sync { msg_id: u32 },
     #[brw(magic(0xff_00_00_02_u32))]
@@ -104,7 +113,7 @@ impl CtrlMsg {
         use CtrlMsg::*;
         match self {
             Query { msg_id } => *msg_id = mid,
-            QueryReply { msg_id } => *msg_id = mid,
+            QueryReply { msg_id, .. } => *msg_id = mid,
             Sync { msg_id } => *msg_id = mid,
             SyncReply { msg_id } => *msg_id = mid,
             XGbeCfg { msg_id, .. } => *msg_id = mid,
@@ -130,7 +139,7 @@ impl CtrlMsg {
         use CtrlMsg::*;
         match self {
             Query { msg_id } => *msg_id,
-            QueryReply { msg_id } => *msg_id,
+            QueryReply { msg_id, .. } => *msg_id,
             Sync { msg_id } => *msg_id,
             SyncReply { msg_id } => *msg_id,
             XGbeCfg { msg_id, .. } => *msg_id,

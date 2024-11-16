@@ -23,7 +23,15 @@ fn main() {
         let msg = CtrlMsg::read(&mut cursor).unwrap();
 
         let reply = match msg {
-            Query { msg_id } => QueryReply { msg_id },
+            Query { msg_id } => QueryReply {
+                msg_id,
+                fm_ver: 1,
+                tick_cnt1: 10,
+                tick_cnt2: 10,
+                locked: 0,
+                nhealth: 10,
+                values: vec![0; 10],
+            },
             //QueryReply { msg_id } => *msg_id = mid,
             Sync { msg_id } => SyncReply { msg_id },
             //SyncReply { msg_id } => *msg_id = mid,
