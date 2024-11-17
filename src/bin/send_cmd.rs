@@ -11,8 +11,8 @@ struct Args {
     #[clap(short = 'a', long = "addr", num_args(1..), value_name = "<ip:port> ...")]
     addr: Vec<String>,
 
-    #[clap(short = 'p', long = "port", value_name = "local port")]
-    port: u16,
+    #[clap(short = 'L', long = "local addr", value_name = "local addr and port, default: [::]:3001", default_value("[::]:3001"))]
+    local_addr: String,
 
     #[clap(short = 'c', long = "cmd", value_name = "cmd.yaml")]
     cmd: String,
@@ -23,7 +23,7 @@ fn main() {
 
     let cmds: Vec<CtrlMsg> = from_reader(File::open(&args.cmd).expect("file not open")).unwrap();
 
-    let socket = UdpSocket::bind(format!("0.0.0.0:{}", args.port)).unwrap();
+    let socket = UdpSocket::bind(args.local_addr).unwrap();
     socket.set_broadcast(true).expect("broadcast set failed");
     socket
         .set_nonblocking(true)
