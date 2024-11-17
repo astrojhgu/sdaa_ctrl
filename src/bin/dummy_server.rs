@@ -9,7 +9,7 @@ struct Args {
 }
 
 use binrw::{BinRead, BinWrite};
-use sdand_ctrl::ctrl_msg::{CtrlMsg, CtrlMsg::*};
+use sdand_ctrl::ctrl_msg::{print_bytes, CtrlMsg::{self, *}};
 use std::{io::Cursor, net::UdpSocket};
 fn main() {
     let args = Args::parse();
@@ -19,8 +19,10 @@ fn main() {
         let mut buf = vec![0_u8; 9000];
         let (sz, addr) = socket.recv_from(&mut buf).unwrap();
         println!("received {} Bytes from {}", sz, addr);
+        print_bytes(&buf[..sz]);
         let mut cursor = Cursor::new(buf);
         let msg = CtrlMsg::read(&mut cursor).unwrap();
+        println!("{:?}", msg);
 
         let reply = match msg {
             Query { msg_id } => QueryReply {

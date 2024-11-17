@@ -2,7 +2,7 @@ use std::{collections::BTreeSet, fs::File, io::Cursor, net::UdpSocket};
 
 use binrw::{BinRead, BinWrite};
 use clap::Parser;
-use sdand_ctrl::ctrl_msg::CtrlMsg;
+use sdand_ctrl::ctrl_msg::{print_bytes, CtrlMsg};
 use serde_yaml::from_reader;
 
 #[derive(Parser, Debug)]
@@ -35,12 +35,17 @@ fn main() {
         for addr in &args.addr {
             c.set_msg_id(msg_id);
             msg_set.insert(msg_id);
-            println!("{} sent", msg_id);
-            msg_id += 1;
+
             let mut buf = Cursor::new(Vec::new());
             c.write(&mut buf).unwrap();
             let buf = buf.into_inner();
             socket.send_to(&buf, addr).expect("send error");
+
+            println!("msg with id={} sent", msg_id);
+            print_bytes(&buf);
+
+            println!("{:?}", c);
+
 
             let mut buf = vec![0_u8; 9000];
             while let Ok((_s, _a)) = socket.recv_from(&mut buf) {
@@ -49,11 +54,14 @@ fn main() {
                 let mut cursor = Cursor::new(buf1);
                 let reply = CtrlMsg::read(&mut cursor).unwrap();
                 let msg_id = reply.get_msg_id();
-                println!("{} received", msg_id);
+                println!("msg with id={} replied", msg_id);
                 assert!(msg_set.remove(&msg_id));
             }
+            msg_id += 1;
         }
     }
+
+    println!("==waiting for the rest replies==");
     socket
         .set_nonblocking(false)
         .expect("nonblocking set failed");
@@ -64,7 +72,8 @@ fn main() {
         let mut cursor = Cursor::new(buf);
         let reply = CtrlMsg::read(&mut cursor).unwrap();
         let msg_id = reply.get_msg_id();
-        println!("{} replied", msg_id);
+        println!("msg with id={} replied", msg_id);
         assert!(msg_set.remove(&msg_id));
     }
+    println!("==all replies have been received. Bye!==");
 }

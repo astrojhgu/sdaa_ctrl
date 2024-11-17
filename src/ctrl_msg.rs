@@ -161,3 +161,12 @@ impl CtrlMsg {
         }
     }
 }
+
+pub fn print_bytes(x: &[u8]){
+    for w in x.chunks(4){
+        for &b in w{
+            print!("{b:02x} ");
+        }
+        println!();
+    }
+}
