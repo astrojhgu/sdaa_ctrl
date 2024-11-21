@@ -13,7 +13,7 @@ rustup default stable
 
 # 下载本控制程序代码
 ```bash
-git clone https://github.com/astrojhgu/sdand_ctrl
+git clone https://github.com/astrojhgu/sdand_ctrl.git
 ```
 
 # 编译
