@@ -11,7 +11,12 @@ struct Args {
     #[clap(short = 'a', long = "addr", num_args(1..), value_name = "<ip:port> ...")]
     addr: Vec<String>,
 
-    #[clap(short = 'L', long = "local addr", value_name = "local addr and port, default: [::]:3001", default_value("[::]:3001"))]
+    #[clap(
+        short = 'L',
+        long = "local addr",
+        value_name = "local addr and port, default: [::]:3001",
+        default_value("[::]:3001")
+    )]
     local_addr: String,
 
     #[clap(short = 'c', long = "cmd", value_name = "cmd.yaml")]
@@ -46,13 +51,15 @@ fn main() {
 
             println!("{:?}", c);
 
-
             let mut buf = vec![0_u8; 9000];
             while let Ok((_s, _a)) = socket.recv_from(&mut buf) {
                 //let (_s, _a)=socket.recv_from(&mut buf).unwrap();
                 let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
                 let mut cursor = Cursor::new(buf1);
                 let reply = CtrlMsg::read(&mut cursor).unwrap();
+                if let CtrlMsg::InvalidMsg { .. } = reply {
+                    println!("Invalid msg {:?}", reply);
+                }
                 let msg_id = reply.get_msg_id();
                 println!("msg with id={} replied", msg_id);
                 assert!(msg_set.remove(&msg_id));
@@ -71,6 +78,9 @@ fn main() {
         socket.recv_from(&mut buf).unwrap();
         let mut cursor = Cursor::new(buf);
         let reply = CtrlMsg::read(&mut cursor).unwrap();
+        if let CtrlMsg::InvalidMsg { .. } = reply {
+            println!("Invalid msg {:?}", reply);
+        }
         let msg_id = reply.get_msg_id();
         println!("msg with id={} replied", msg_id);
         assert!(msg_set.remove(&msg_id));

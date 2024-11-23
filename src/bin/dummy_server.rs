@@ -9,7 +9,10 @@ struct Args {
 }
 
 use binrw::{BinRead, BinWrite};
-use sdand_ctrl::ctrl_msg::{print_bytes, CtrlMsg::{self, *}};
+use sdand_ctrl::ctrl_msg::{
+    print_bytes,
+    CtrlMsg::{self, *},
+};
 use std::{io::Cursor, net::UdpSocket};
 fn main() {
     let args = Args::parse();
@@ -72,7 +75,15 @@ fn main() {
             //StreamStartReply { msg_id } => *msg_id = mid,
             StreamStop { msg_id } => StreamStopReply { msg_id },
             //StreamStopReply { msg_id } => *msg_id = mid,
-            _ => panic!(),
+            x => {
+                let desc = "invalid".to_string().as_bytes().to_vec();
+                InvalidMsg {
+                    msg_id: x.get_msg_id(),
+                    err_code: 0,
+                    len: desc.len() as u32,
+                    description: desc,
+                }
+            }
         };
 
         let mut cursor = Cursor::new(Vec::new());
