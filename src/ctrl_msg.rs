@@ -106,6 +106,15 @@ pub enum CtrlMsg {
     StreamStop { msg_id: u32 },
     #[brw(magic(0xff_00_02_05_u32))]
     StreamStopReply { msg_id: u32 },
+    #[brw(magic(0x06_u32))]
+    VGACtrl {
+        msg_id: u32,
+        nvga: u32,
+        #[br(count=nvga)]
+        gains: Vec<u32>,
+    },
+    #[brw(magic(0xff_00_00_06_u32))]
+    VGACtrlReply { msg_id: u32, err_code: u32 },
 }
 
 impl CtrlMsg {
@@ -132,6 +141,8 @@ impl CtrlMsg {
             StreamStartReply { msg_id } => *msg_id = mid,
             StreamStop { msg_id } => *msg_id = mid,
             StreamStopReply { msg_id } => *msg_id = mid,
+            VGACtrl { msg_id, .. } => *msg_id = mid,
+            VGACtrlReply { msg_id, .. } => *msg_id = mid,
         }
     }
 
@@ -158,13 +169,15 @@ impl CtrlMsg {
             StreamStartReply { msg_id } => *msg_id,
             StreamStop { msg_id } => *msg_id,
             StreamStopReply { msg_id } => *msg_id,
+            VGACtrl { msg_id, .. } => *msg_id,
+            VGACtrlReply { msg_id, .. } => *msg_id,
         }
     }
 }
 
-pub fn print_bytes(x: &[u8]){
-    for w in x.chunks(4){
-        for &b in w{
+pub fn print_bytes(x: &[u8]) {
+    for w in x.chunks(4) {
+        for &b in w {
             print!("{b:02x} ");
         }
         println!();
