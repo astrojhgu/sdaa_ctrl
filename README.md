@@ -1,10 +1,41 @@
 # 配置rust开发环境
-1. 运行命令安装rustup
+## 首先确认是否已经安装了`rust`开发环境
+运行命令
+```bash
+rustup default
+```
+如果返回
+```
+nightly-x86_64-unknown-linux-gnu (default)
+```
+或者
+```
+stable-x86_64-unknown-linux-gnu (default)
+```
+则说明`rustup`环境已经安装并且完成配置，去往[下载本控制程序代码](#下载本控制程序代码)
+
+如果返回
+```
+error: no default toolchain configured
+```
+则说明已经安装了`rustup`，但是尚未进行配置，去往[配置toolchain channel 为stable](#配置toolchain-channel为stable)
+
+如果返回找不到命令(command not found)，则说明`rustup`未安装，去往[安装rustup](#安装rustup)。
+
+## 安装`rustup`
+有两种方法：
+1. 运行如下命令安装rustup
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
+2. 在`ubuntu`发行版上，可利用`snap`包管理器安装
+```bash
+sudo snap install rustup
+```
 
-2. 配置toolchain channel为stable
+
+## 配置toolchain channel为stable
+不论使用上述哪种方法安装了`rustup`都需要用如下命令进行配置。
 ```bash
 rustup default stable
 ```
