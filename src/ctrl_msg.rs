@@ -24,10 +24,10 @@ pub struct XGbeCfg {
 #[brw(little)]
 pub enum CtrlMsg {
     #[brw(magic(0xff_ff_ff_ff_u32))]
-    InvalidMsg{
-        msg_id: u32, 
-        err_code: u32, 
-        len: u32, 
+    InvalidMsg {
+        msg_id: u32,
+        err_code: u32,
+        len: u32,
         #[br(count=len)]
         description: Vec<u8>,
     },
@@ -129,7 +129,7 @@ impl CtrlMsg {
     pub fn set_msg_id(&mut self, mid: u32) {
         use CtrlMsg::*;
         match self {
-            InvalidMsg{msg_id,..}=>*msg_id=mid,
+            InvalidMsg { msg_id, .. } => *msg_id = mid,
             Query { msg_id } => *msg_id = mid,
             QueryReply { msg_id, .. } => *msg_id = mid,
             Sync { msg_id } => *msg_id = mid,
@@ -158,7 +158,7 @@ impl CtrlMsg {
     pub fn get_msg_id(&self) -> u32 {
         use CtrlMsg::*;
         match self {
-            InvalidMsg {msg_id,..}=>*msg_id,
+            InvalidMsg { msg_id, .. } => *msg_id,
             Query { msg_id } => *msg_id,
             QueryReply { msg_id, .. } => *msg_id,
             Sync { msg_id } => *msg_id,
