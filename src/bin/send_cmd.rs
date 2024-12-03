@@ -77,7 +77,7 @@ fn main() {
 
     while !msg_set.is_empty() {
         let mut buf = vec![0_u8; 9000];
-        let (l, a) = socket.recv_from(&mut buf).unwrap();
+        let (l, _a) = socket.recv_from(&mut buf).unwrap();
         println!("received bytes:");
         print_bytes(&buf[..l]);
         let mut cursor = Cursor::new(buf);
