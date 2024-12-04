@@ -39,6 +39,7 @@ pub enum CtrlMsg {
         fm_ver: u32,
         tick_cnt1: u32,
         tick_cnt2: u32,
+	trans_state: u32, 
         locked: u32,
         nhealth: u32,
         #[br(count = nhealth)]

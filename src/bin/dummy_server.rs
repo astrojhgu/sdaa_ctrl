@@ -33,6 +33,7 @@ fn main() {
                 fm_ver: 1,
                 tick_cnt1: 10,
                 tick_cnt2: 10,
+		trans_state: 0,
                 locked: 0,
                 nhealth: 10,
                 values: vec![0; 10],
