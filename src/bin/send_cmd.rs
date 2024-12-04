@@ -82,8 +82,9 @@ fn main() {
         print_bytes(&buf[..l]);
         let mut cursor = Cursor::new(buf);
         let reply = CtrlMsg::read(&mut cursor).unwrap();
+        println!("{}", reply);
         if let CtrlMsg::InvalidMsg { .. } = reply {
-            println!("Invalid msg {:?}", reply);
+            println!("Invalid msg received");
         }
         let msg_id = reply.get_msg_id();
         println!("msg with id={} replied", msg_id);

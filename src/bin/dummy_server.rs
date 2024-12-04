@@ -26,6 +26,7 @@ fn main() {
         let mut cursor = Cursor::new(buf);
         let msg = CtrlMsg::read(&mut cursor).unwrap();
         println!("{:?}", msg);
+        println!("{}", msg);
 
         let reply = match msg {
             Query { msg_id } => QueryReply {
@@ -33,7 +34,7 @@ fn main() {
                 fm_ver: 1,
                 tick_cnt1: 10,
                 tick_cnt2: 10,
-		trans_state: 0,
+                trans_state: 0,
                 locked: 0,
                 nhealth: 10,
                 values: vec![0; 10],

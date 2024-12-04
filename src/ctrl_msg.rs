@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use binrw::binrw;
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +19,31 @@ pub struct XGbeCfg {
     pub dst_port: u16, //26
     #[brw(pad_after(2))]
     pub src_port: u16, //30
+}
+
+impl Display for XGbeCfg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}.{}.{}.{}:{}",
+            self.src_ip[0], self.src_ip[1], self.src_ip[2], self.src_ip[3], self.src_port
+        )?;
+        write!(f, "(")?;
+        for x in self.src_mac {
+            write!(f, " {x:02x}")?
+        }
+        write!(f, ") -> ")?;
+        write!(
+            f,
+            "{}.{}.{}.{}:{}",
+            self.dst_ip[0], self.dst_ip[1], self.dst_ip[2], self.dst_ip[3], self.dst_port
+        )?;
+        write!(f, "(")?;
+        for x in self.dst_mac {
+            write!(f, " {x:02x}")?
+        }
+        write!(f, ")")
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -39,7 +66,7 @@ pub enum CtrlMsg {
         fm_ver: u32,
         tick_cnt1: u32,
         tick_cnt2: u32,
-	trans_state: u32, 
+        trans_state: u32,
         locked: u32,
         nhealth: u32,
         #[br(count = nhealth)]
@@ -124,6 +151,183 @@ pub enum CtrlMsg {
     },
     #[brw(magic(0xff_00_00_06_u32))]
     VGACtrlReply { msg_id: u32, err_code: u32 },
+}
+
+impl Display for CtrlMsg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "=====================")?;
+        match self {
+            CtrlMsg::InvalidMsg {
+                msg_id,
+                err_code,
+                len: _,
+                description,
+            } => {
+                let desc = String::from_utf8(description.clone()).unwrap();
+                writeln!(
+                    f,
+                    "InvalidMsg:{{ msg_id: {msg_id}, err_code: {err_code}, desc: {desc} }}"
+                )
+            }
+            CtrlMsg::Query { msg_id } => {
+                writeln!(f, "Query{{ msg_id: {msg_id} }}")
+            }
+            CtrlMsg::QueryReply {
+                msg_id,
+                fm_ver,
+                tick_cnt1,
+                tick_cnt2,
+                trans_state,
+                locked,
+                nhealth: _,
+                values,
+            } => {
+                write!(f, "QueryReply{{msg_id: {msg_id}, fm_ver: 0x{fm_ver:x}, tick_cnt1: {tick_cnt1}, tick_cnt2: {tick_cnt2}, trans_state: 0x{trans_state:x}, locked: 0x{locked:x}, Health:")?;
+                for x in values {
+                    write!(f, " {x}")?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::Sync { msg_id } => {
+                writeln!(f, "Sync {{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::SyncReply { msg_id } => {
+                writeln!(f, "SyncReply{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::XGbeCfg { msg_id, cfg } => {
+                writeln!(f, "XGbeCfg{{msg_id: {msg_id}")?;
+                for x in cfg {
+                    writeln!(f, "{}", x)?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::XgbeCfgReply { msg_id } => {
+                writeln!(f, "XgbeCfgReply{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::I2CScan { msg_id } => {
+                writeln!(f, "I2CScan{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::I2CScanReply { msg_id, payload } => {
+                write!(f, "I2CScanReply{{msg_id: {msg_id}")?;
+                for &x in payload {
+                    write!(f, "{x:02x}")?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::I2CWrite {
+                msg_id,
+                dev_addr,
+                len: _,
+                payload,
+            } => {
+                write!(f, "I2CWrite{{ msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, ")?;
+                for &x in payload {
+                    write!(f, " {x:02x}")?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::I2CWriteReply { msg_id, err_code } => {
+                writeln!(
+                    f,
+                    "I2CWriteReply{{msg_id: {msg_id}, err_code: 0x{err_code:x}}}"
+                )
+            }
+            CtrlMsg::I2CWriteReg {
+                msg_id,
+                dev_addr,
+                reg_addr,
+                len: _,
+                payload,
+            } => {
+                write!(f, "I2CWriteReg{{ msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, reg_addr: {reg_addr:x}")?;
+                for &x in payload {
+                    write!(f, " {x:02x}")?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::I2CWriteRegReply { msg_id, err_code } => {
+                writeln!(
+                    f,
+                    "I2CWriteRegReply{{msg_id: {msg_id}, err_code: 0x{err_code:x}}}"
+                )
+            }
+            CtrlMsg::I2CRead {
+                msg_id,
+                dev_addr,
+                nbytes,
+            } => {
+                writeln!(
+                    f,
+                    "I2CRead{{msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, nbytes:{nbytes}}}"
+                )
+            }
+            CtrlMsg::I2CReadReply {
+                msg_id,
+                err_code,
+                len: _,
+                payload,
+            } => {
+                write!(f, "I2CReadReply{{ msg_id: {msg_id}, err_code: {err_code:x}")?;
+                for &x in payload {
+                    write!(f, " {x:02x}")?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::I2CReadReg {
+                msg_id,
+                dev_addr,
+                reg_addr,
+                nbytes,
+            } => {
+                writeln!(f, "I2CReadReg{{msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, reg_addr: {reg_addr:x} nbytes:{nbytes}}}")
+            }
+            CtrlMsg::I2CReadRegReply {
+                msg_id,
+                err_code,
+                len: _,
+                payload,
+            } => {
+                write!(
+                    f,
+                    "I2CReadRegReply{{ msg_id: {msg_id}, err_code: {err_code:x}"
+                )?;
+                for &x in payload {
+                    write!(f, " {x:02x}")?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::StreamStart { msg_id } => {
+                writeln!(f, "StreamStart{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::StreamStartReply { msg_id } => {
+                writeln!(f, "StreamStartReply{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::StreamStop { msg_id } => {
+                writeln!(f, "StreamStop{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::StreamStopReply { msg_id } => {
+                writeln!(f, "StreamStopReply{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::VGACtrl {
+                msg_id,
+                nvga: _,
+                gains,
+            } => {
+                write!(f, "VGACtrl{{ msg_id: {msg_id},")?;
+                for &x in gains {
+                    write!(f, "{x}")?;
+                }
+                writeln!(f, "}}")
+            }
+            CtrlMsg::VGACtrlReply { msg_id, err_code } => {
+                writeln!(
+                    f,
+                    "VGACtrlReply{{msg_id: {msg_id}, err_code: 0x{err_code:x}}}"
+                )
+            }
+        }?;
+        writeln!(f, "=====================")
+    }
 }
 
 impl CtrlMsg {
