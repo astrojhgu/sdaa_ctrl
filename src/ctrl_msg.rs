@@ -151,6 +151,10 @@ pub enum CtrlMsg {
     },
     #[brw(magic(0xff_00_00_06_u32))]
     VGACtrlReply { msg_id: u32, err_code: u32 },
+    #[brw(magic(0x07_u32))]
+    Suspend { msg_id: u32, reserved_zeros: u32 },
+    #[brw(magic(0xff_00_00_07_u32))]
+    SuspendReply { msg_id: u32 },
 }
 
 impl Display for CtrlMsg {
@@ -325,6 +329,15 @@ impl Display for CtrlMsg {
                     "VGACtrlReply{{msg_id: {msg_id}, err_code: 0x{err_code:x}}}"
                 )
             }
+            CtrlMsg::Suspend {
+                msg_id,
+                reserved_zeros: _,
+            } => {
+                writeln!(f, "Suspend{{msg_id: {msg_id}}}")
+            }
+            CtrlMsg::SuspendReply { msg_id } => {
+                writeln!(f, "SuspendReply{{msg_id: {msg_id}}}")
+            }
         }?;
         writeln!(f, "=====================")
     }
@@ -357,6 +370,8 @@ impl CtrlMsg {
             StreamStopReply { msg_id } => *msg_id = mid,
             VGACtrl { msg_id, .. } => *msg_id = mid,
             VGACtrlReply { msg_id, .. } => *msg_id = mid,
+            Suspend { msg_id, .. } => *msg_id = mid,
+            SuspendReply { msg_id, .. } => *msg_id = mid,
         }
     }
 
@@ -386,6 +401,8 @@ impl CtrlMsg {
             StreamStopReply { msg_id } => *msg_id,
             VGACtrl { msg_id, .. } => *msg_id,
             VGACtrlReply { msg_id, .. } => *msg_id,
+            Suspend { msg_id, .. } => *msg_id,
+            SuspendReply { msg_id } => *msg_id,
         }
     }
 }
