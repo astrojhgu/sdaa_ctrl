@@ -2,6 +2,11 @@
 
 #show figure: set block(breakable: true)
 
+#let new_content(content)={
+  text(fill:red)[#content]
+}
+
+
 #show: project.with(
   title: [SDANDART控制协议], authors: (
   ), keywords: (), date: [2024-12-08 version 0.6], abstract: [
@@ -12,13 +17,10 @@
     - 20241116 v0.3 状态查询的上行回复消息中，增加了健康指标个数的字段
     - 20241123 v0.4 增加VGA控制指令
     - 20241204 v0.5 状态查询的上行消息中，增加表示数据是否在传输的字段
-    - 20241204 v0.6 增加休眠指令，对于状态查询的上行消息做进一步细化
+    - 20241204 v0.6 #new_content[增加休眠指令，对于状态查询的上行消息做进一步细化]
   ],
 )
 
-#let new_content(content)={
-  text(fill:red)[#content]
-}
 
 = 下行指令和上行消息的总体结构
 
