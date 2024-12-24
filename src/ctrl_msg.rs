@@ -425,7 +425,7 @@ pub fn print_bytes(x: &[u8]) {
         for &b in w {
             print!("{b:02x} ");
         }
-        print!("| {i:02}");
+        print!("| {i:02} {}:{}", i*4, i*4+3);
         println!();
     }
 }
