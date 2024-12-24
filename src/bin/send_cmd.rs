@@ -59,7 +59,7 @@ fn main() {
             while let Ok((l, a)) = socket.recv_from(&mut buf) {
                 //let (_s, _a)=socket.recv_from(&mut buf).unwrap();
                 if debug_level >=1 {
-                    println!("received from {:?}:", a);
+                    println!("received {} bytes, {} words from {:?}:", l, l/4, a);
                     print_bytes(&buf[..l]);
                 }                
                 let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
@@ -86,7 +86,7 @@ fn main() {
         let (l, a) = socket.recv_from(&mut buf).unwrap();
 
         if debug_level>=1{
-            println!("received bytes from {:?}:", a);
+            println!("received {} bytes, {} words from {:?}:", l, l/4, a);
             print_bytes(&buf[..l]);
         }
         

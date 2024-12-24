@@ -49,6 +49,25 @@ impl Display for XGbeCfg {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[binrw]
 #[brw(little)]
+pub enum Health {
+    #[brw(magic(0x31_76_6c_68_u32))]
+    HLHealth {
+        nhealth: u32,
+        xgbe_state: [u32; 4],
+        pkt_sent: [u64; 4],
+        volt12_inner: u32,
+        volt12_input: u32,
+        vcc1v0: u32,
+        vcc1v8: u32,
+        mgtavtt1v2: u32,
+        mgtavtt1v0: u32,
+        temperature: u32,
+    },
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[binrw]
+#[brw(little)]
 pub enum CtrlMsg {
     #[brw(magic(0xff_ff_ff_ff_u32))]
     InvalidMsg {
@@ -68,10 +87,7 @@ pub enum CtrlMsg {
         tick_cnt2: u32,
         trans_state: u32,
         locked: u32,
-        magic_number: u32,
-        nhealth: u32,
-        #[br(count = nhealth)]
-        values: Vec<u32>,
+        health: Health,
     },
     #[brw(magic(0x02_u32))]
     Sync { msg_id: u32 },
@@ -184,14 +200,9 @@ impl Display for CtrlMsg {
                 tick_cnt2,
                 trans_state,
                 locked,
-                magic_number,
-                nhealth: _,
-                values,
+                health,
             } => {
-                write!(f, "QueryReply{{msg_id: {msg_id}, fm_ver: 0x{fm_ver:x}, tick_cnt1: {tick_cnt1}, tick_cnt2: {tick_cnt2}, trans_state: 0x{trans_state:x}, locked: 0x{locked:x}, magic: 0x{magic_number:x}, Health:")?;
-                for x in values {
-                    write!(f, " {x}")?;
-                }
+                write!(f, "QueryReply{{msg_id: {msg_id}, fm_ver: 0x{fm_ver:x}, tick_cnt1: {tick_cnt1}, tick_cnt2: {tick_cnt2}, trans_state: 0x{trans_state:x}, locked: 0x{locked:x}, Health: {health:?}")?;
                 writeln!(f, "}}")
             }
             CtrlMsg::Sync { msg_id } => {
@@ -410,10 +421,11 @@ impl CtrlMsg {
 }
 
 pub fn print_bytes(x: &[u8]) {
-    for w in x.chunks(4) {
+    for (i, w) in x.chunks(4).enumerate() {
         for &b in w {
             print!("{b:02x} ");
         }
+        print!("| {i:02}");
         println!();
     }
 }

@@ -12,6 +12,7 @@ use binrw::{BinRead, BinWrite};
 use sdand_ctrl::ctrl_msg::{
     print_bytes,
     CtrlMsg::{self, *},
+    Health,
 };
 use std::{io::Cursor, net::UdpSocket};
 fn main() {
@@ -31,14 +32,23 @@ fn main() {
         let reply = match msg {
             Query { msg_id } => QueryReply {
                 msg_id,
-                fm_ver: 1,
+                fm_ver: 0x24122420,
                 tick_cnt1: 10,
                 tick_cnt2: 10,
                 trans_state: 0,
                 locked: 0,
-                magic_number: 0x31_76_6c_68,
-                nhealth: 10,
-                values: vec![0; 10],
+                health: Health::HLHealth {
+                    nhealth: 10,
+                    xgbe_state: [10, 10, 10, 10],
+                    pkt_sent: [0x1234, 0x1234, 0x1234, 0x1234],
+                    volt12_inner: 12000,
+                    volt12_input: 12000,
+                    vcc1v0: 120000,
+                    vcc1v8: 12000,
+                    mgtavtt1v2: 12000,
+                    mgtavtt1v0: 12000,
+                    temperature: 12000,
+                },
             },
             //QueryReply { msg_id } => *msg_id = mid,
             Sync { msg_id } => SyncReply { msg_id },
