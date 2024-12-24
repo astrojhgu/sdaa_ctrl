@@ -52,9 +52,9 @@ fn main() {
             println!("{:?}", c);
 
             let mut buf = vec![0_u8; 9000];
-            while let Ok((l, _a)) = socket.recv_from(&mut buf) {
+            while let Ok((l, a)) = socket.recv_from(&mut buf) {
                 //let (_s, _a)=socket.recv_from(&mut buf).unwrap();
-                println!("received bytes:");
+                println!("received bytes from {:?}:", a);
                 print_bytes(&buf[..l]);
                 let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
                 let mut cursor = Cursor::new(buf1);
@@ -77,8 +77,8 @@ fn main() {
 
     while !msg_set.is_empty() {
         let mut buf = vec![0_u8; 9000];
-        let (l, _a) = socket.recv_from(&mut buf).unwrap();
-        println!("received bytes:");
+        let (l, a) = socket.recv_from(&mut buf).unwrap();
+        println!("received bytes from {:?}:", a);
         print_bytes(&buf[..l]);
         let mut cursor = Cursor::new(buf);
         let reply = CtrlMsg::read(&mut cursor).unwrap();
