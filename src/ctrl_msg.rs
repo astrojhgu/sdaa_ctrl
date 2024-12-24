@@ -68,6 +68,7 @@ pub enum CtrlMsg {
         tick_cnt2: u32,
         trans_state: u32,
         locked: u32,
+        magic_number: u32,
         nhealth: u32,
         #[br(count = nhealth)]
         values: Vec<u32>,
@@ -183,10 +184,11 @@ impl Display for CtrlMsg {
                 tick_cnt2,
                 trans_state,
                 locked,
+                magic_number,
                 nhealth: _,
                 values,
             } => {
-                write!(f, "QueryReply{{msg_id: {msg_id}, fm_ver: 0x{fm_ver:x}, tick_cnt1: {tick_cnt1}, tick_cnt2: {tick_cnt2}, trans_state: 0x{trans_state:x}, locked: 0x{locked:x}, Health:")?;
+                write!(f, "QueryReply{{msg_id: {msg_id}, fm_ver: 0x{fm_ver:x}, tick_cnt1: {tick_cnt1}, tick_cnt2: {tick_cnt2}, trans_state: 0x{trans_state:x}, locked: 0x{locked:x}, magic: 0x{magic_number:x}, Health:")?;
                 for x in values {
                     write!(f, " {x}")?;
                 }

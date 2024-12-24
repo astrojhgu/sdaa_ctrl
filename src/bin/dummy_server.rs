@@ -36,6 +36,7 @@ fn main() {
                 tick_cnt2: 10,
                 trans_state: 0,
                 locked: 0,
+                magic_number: 0x31_76_6c_68,
                 nhealth: 10,
                 values: vec![0; 10],
             },
