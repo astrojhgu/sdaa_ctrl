@@ -21,10 +21,14 @@ struct Args {
 
     #[clap(short = 'c', long = "cmd", value_name = "cmd.yaml")]
     cmd: String,
+
+    #[clap(short = 'd', long = "debug", value_name = "debug level", default_value("0"))]
+    debug_level: u32,
 }
 
 fn main() {
     let args = Args::parse();
+    let debug_level=args.debug_level;
 
     let cmds: Vec<CtrlMsg> = from_reader(File::open(&args.cmd).expect("file not open")).unwrap();
 
@@ -54,8 +58,10 @@ fn main() {
             let mut buf = vec![0_u8; 9000];
             while let Ok((l, a)) = socket.recv_from(&mut buf) {
                 //let (_s, _a)=socket.recv_from(&mut buf).unwrap();
-                println!("received bytes from {:?}:", a);
-                print_bytes(&buf[..l]);
+                if debug_level >=1 {
+                    println!("received from {:?}:", a);
+                    print_bytes(&buf[..l]);
+                }                
                 let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
                 let mut cursor = Cursor::new(buf1);
                 let reply = CtrlMsg::read(&mut cursor).unwrap();
@@ -63,7 +69,7 @@ fn main() {
                     println!("Invalid msg {:?}", reply);
                 }
                 let msg_id = reply.get_msg_id();
-                println!("msg with id={} replied", msg_id);
+                println!("msg with id={} replied from {:?}", msg_id, a);
                 assert!(msg_set.remove(&msg_id));
             }
             msg_id += 1;
@@ -78,8 +84,12 @@ fn main() {
     while !msg_set.is_empty() {
         let mut buf = vec![0_u8; 9000];
         let (l, a) = socket.recv_from(&mut buf).unwrap();
-        println!("received bytes from {:?}:", a);
-        print_bytes(&buf[..l]);
+
+        if debug_level>=1{
+            println!("received bytes from {:?}:", a);
+            print_bytes(&buf[..l]);
+        }
+        
         let mut cursor = Cursor::new(buf);
         let reply = CtrlMsg::read(&mut cursor).unwrap();
         println!("{}", reply);
@@ -87,7 +97,7 @@ fn main() {
             println!("Invalid msg received");
         }
         let msg_id = reply.get_msg_id();
-        println!("msg with id={} replied", msg_id);
+        println!("msg with id={} replied from {:?}", msg_id, a);
         assert!(msg_set.remove(&msg_id));
     }
     println!("==all replies have been received. Bye!==");
