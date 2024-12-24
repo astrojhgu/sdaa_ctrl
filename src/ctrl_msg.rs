@@ -172,6 +172,11 @@ pub enum CtrlMsg {
     Suspend { msg_id: u32, reserved_zeros: u32 },
     #[brw(magic(0xff_00_00_07_u32))]
     SuspendReply { msg_id: u32 },
+
+    #[brw(magic(0x08_u32))]
+    Init { msg_id: u32, reserved_zeros: u32 },
+    #[brw(magic(0xff_00_00_08_u32))]
+    InitReply { msg_id: u32 },
 }
 
 impl Display for CtrlMsg {
@@ -351,6 +356,17 @@ impl Display for CtrlMsg {
             CtrlMsg::SuspendReply { msg_id } => {
                 writeln!(f, "SuspendReply{{msg_id: {msg_id}}}")
             }
+
+            CtrlMsg::Init {
+                msg_id,
+                reserved_zeros:_,
+            } => {
+                writeln!(f, "Init {{msg_id: {msg_id}}}")
+            }
+
+            CtrlMsg::InitReply { msg_id } => {
+                writeln!(f, "InitReply {{msg_id: {msg_id}}}")
+            }
         }?;
         writeln!(f, "=====================")
     }
@@ -385,6 +401,8 @@ impl CtrlMsg {
             VGACtrlReply { msg_id, .. } => *msg_id = mid,
             Suspend { msg_id, .. } => *msg_id = mid,
             SuspendReply { msg_id, .. } => *msg_id = mid,
+            Init { msg_id, .. } => *msg_id = mid,
+            InitReply { msg_id, .. } => *msg_id = mid,
         }
     }
 
@@ -416,6 +434,11 @@ impl CtrlMsg {
             VGACtrlReply { msg_id, .. } => *msg_id,
             Suspend { msg_id, .. } => *msg_id,
             SuspendReply { msg_id } => *msg_id,
+            Init {
+                msg_id,
+                reserved_zeros: _,
+            } => *msg_id,
+            InitReply { msg_id } => *msg_id,
         }
     }
 }
@@ -425,7 +448,7 @@ pub fn print_bytes(x: &[u8]) {
         for &b in w {
             print!("{b:02x} ");
         }
-        print!("| {i:02} {}:{}", i*4, i*4+3);
+        print!("| {i:02} {}:{}", i * 4, i * 4 + 3);
         println!();
     }
 }

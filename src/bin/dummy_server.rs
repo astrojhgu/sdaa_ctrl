@@ -88,6 +88,10 @@ fn main() {
             //StreamStartReply { msg_id } => *msg_id = mid,
             StreamStop { msg_id } => StreamStopReply { msg_id },
             //StreamStopReply { msg_id } => *msg_id = mid,
+            Init { msg_id, .. } => InitReply { msg_id },
+
+            Suspend { msg_id, .. } => SuspendReply { msg_id },
+
             x => {
                 let desc = "invalid".to_string().as_bytes().to_vec();
                 InvalidMsg {
