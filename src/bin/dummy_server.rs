@@ -47,7 +47,7 @@ fn main() {
                     vcc1v8: 12000,
                     mgtavtt1v2: 12000,
                     mgtavtt1v0: 12000,
-                    temperature: 12000,
+                    temperatures: [40000,30000],
                 },
             },
             //QueryReply { msg_id } => *msg_id = mid,

@@ -61,7 +61,7 @@ pub enum Health {
         vcc1v8: u32,
         mgtavtt1v2: u32,
         mgtavtt1v0: u32,
-        temperature: u32,
+        temperatures: [u32;2],
     },
 }
 
