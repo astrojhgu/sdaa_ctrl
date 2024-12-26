@@ -90,7 +90,7 @@ fn main() {
             //StreamStopReply { msg_id } => *msg_id = mid,
             Init { msg_id, .. } => InitReply { msg_id },
 
-            Suspend { msg_id, .. } => SuspendReply { msg_id },
+            PwrCtrl { msg_id, .. } => PwrCtrlReply { msg_id },
 
             x => {
                 let desc = "invalid".to_string().as_bytes().to_vec();

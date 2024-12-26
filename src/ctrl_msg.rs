@@ -169,9 +169,9 @@ pub enum CtrlMsg {
     #[brw(magic(0xff_00_00_06_u32))]
     VGACtrlReply { msg_id: u32, err_code: u32 },
     #[brw(magic(0x07_u32))]
-    Suspend { msg_id: u32, reserved_zeros: u32 },
+    PwrCtrl { msg_id: u32, op_code: u32 },
     #[brw(magic(0xff_00_00_07_u32))]
-    SuspendReply { msg_id: u32 },
+    PwrCtrlReply { msg_id: u32 },
 
     #[brw(magic(0x08_u32))]
     Init { msg_id: u32, reserved_zeros: u32 },
@@ -347,14 +347,14 @@ impl Display for CtrlMsg {
                     "VGACtrlReply{{msg_id: {msg_id}, err_code: 0x{err_code:x}}}"
                 )
             }
-            CtrlMsg::Suspend {
+            CtrlMsg::PwrCtrl {
                 msg_id,
-                reserved_zeros: _,
+                op_code,
             } => {
-                writeln!(f, "Suspend{{msg_id: {msg_id}}}")
+                writeln!(f, "PwrCtrl{{msg_id: {msg_id}, op_code: {op_code}}}")
             }
-            CtrlMsg::SuspendReply { msg_id } => {
-                writeln!(f, "SuspendReply{{msg_id: {msg_id}}}")
+            CtrlMsg::PwrCtrlReply { msg_id } => {
+                writeln!(f, "PwrCtrlReply{{msg_id: {msg_id}}}")
             }
 
             CtrlMsg::Init {
@@ -399,8 +399,8 @@ impl CtrlMsg {
             StreamStopReply { msg_id } => *msg_id = mid,
             VGACtrl { msg_id, .. } => *msg_id = mid,
             VGACtrlReply { msg_id, .. } => *msg_id = mid,
-            Suspend { msg_id, .. } => *msg_id = mid,
-            SuspendReply { msg_id, .. } => *msg_id = mid,
+            PwrCtrl { msg_id, .. } => *msg_id = mid,
+            PwrCtrlReply { msg_id, .. } => *msg_id = mid,
             Init { msg_id, .. } => *msg_id = mid,
             InitReply { msg_id, .. } => *msg_id = mid,
         }
@@ -432,8 +432,8 @@ impl CtrlMsg {
             StreamStopReply { msg_id } => *msg_id,
             VGACtrl { msg_id, .. } => *msg_id,
             VGACtrlReply { msg_id, .. } => *msg_id,
-            Suspend { msg_id, .. } => *msg_id,
-            SuspendReply { msg_id } => *msg_id,
+            PwrCtrl { msg_id, .. } => *msg_id,
+            PwrCtrlReply { msg_id } => *msg_id,
             Init {
                 msg_id,
                 reserved_zeros: _,

@@ -1,4 +1,4 @@
-- !Suspend
+- !PwrCtrl
   msg_id: 0
-  reserved_zeros: 0
+  op_code: 0
   
