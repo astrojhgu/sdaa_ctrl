@@ -57,7 +57,8 @@ fn main() {
             //XgbeCfgReply { msg_id } => *msg_id = mid,
             I2CScan { msg_id } => I2CScanReply {
                 msg_id,
-                payload: [0_u8; 32],
+                ndev: 4,
+                payload: vec![0x11,0x22,0x33,0x44],
             },
             //I2CScanReply { msg_id, .. } => *msg_id = mid,
             I2CWrite { msg_id, .. } => I2CWriteReply {

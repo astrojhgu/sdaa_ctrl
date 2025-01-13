@@ -100,7 +100,9 @@ pub enum CtrlMsg {
     #[brw(magic(0x04_u32))]
     I2CScan { msg_id: u32 },
     #[brw(magic(0xff_00_00_04_u32))]
-    I2CScanReply { msg_id: u32, payload: [u8; 32] },
+    I2CScanReply { msg_id: u32, ndev: u32, 
+        #[br(count=ndev)]
+        payload: Vec<u8> },
     #[brw(magic(0x01_04_u32))]
     I2CWrite {
         msg_id: u32,
@@ -229,10 +231,10 @@ impl Display for CtrlMsg {
             CtrlMsg::I2CScan { msg_id } => {
                 writeln!(f, "I2CScan{{msg_id: {msg_id}}}")
             }
-            CtrlMsg::I2CScanReply { msg_id, payload } => {
-                write!(f, "I2CScanReply{{msg_id: {msg_id}")?;
+            CtrlMsg::I2CScanReply { msg_id, ndev, payload } => {
+                write!(f, "I2CScanReply{{msg_id: {msg_id}, ndev: {ndev}, payload: ")?;
                 for &x in payload {
-                    write!(f, "{x:02x}")?;
+                    write!(f, "{x:02x} ")?;
                 }
                 writeln!(f, "}}")
             }
@@ -306,12 +308,12 @@ impl Display for CtrlMsg {
             CtrlMsg::I2CReadRegReply {
                 msg_id,
                 err_code,
-                len: _,
+                len,
                 payload,
             } => {
                 write!(
                     f,
-                    "I2CReadRegReply{{ msg_id: {msg_id}, err_code: {err_code:x}"
+                    "I2CReadRegReply{{ msg_id: {msg_id}, len:{len}, err_code: {err_code:x} payload:"
                 )?;
                 for &x in payload {
                     write!(f, " {x:02x}")?;
