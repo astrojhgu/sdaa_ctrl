@@ -291,7 +291,7 @@ impl Display for CtrlMsg {
                 len: _,
                 payload,
             } => {
-                write!(f, "I2CReadReply{{ msg_id: {msg_id}, err_code: {err_code:x}")?;
+                write!(f, "I2CReadReply{{ msg_id: {msg_id}, err_code: {err_code:x}, payload:")?;
                 for &x in payload {
                     write!(f, " {x:02x}")?;
                 }
