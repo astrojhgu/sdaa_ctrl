@@ -5,7 +5,7 @@
 #import "utils.typ":new_content
 
 #show: project.with(
-  title: [SDANDART控制协议], authors: (
+  title: [SDAA控制协议], authors: (
   ), keywords: (), date: [2024-12-26], abstract: [
     
     版本历史：
