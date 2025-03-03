@@ -47,7 +47,7 @@ fn main() {
                     vcc1v8: 12000,
                     mgtavtt1v2: 12000,
                     mgtavtt1v0: 12000,
-                    temperatures: [40000,30000],
+                    temperatures: [40000, 30000],
                 },
             },
             //QueryReply { msg_id } => *msg_id = mid,
@@ -58,7 +58,7 @@ fn main() {
             I2CScan { msg_id } => I2CScanReply {
                 msg_id,
                 ndev: 4,
-                payload: vec![0x11,0x22,0x33,0x44],
+                payload: vec![0x11, 0x22, 0x33, 0x44],
             },
             //I2CScanReply { msg_id, .. } => *msg_id = mid,
             I2CWrite { msg_id, .. } => I2CWriteReply {

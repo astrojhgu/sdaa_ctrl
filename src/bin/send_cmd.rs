@@ -22,13 +22,18 @@ struct Args {
     #[clap(short = 'c', long = "cmd", value_name = "cmd.yaml")]
     cmd: String,
 
-    #[clap(short = 'd', long = "debug", value_name = "debug level", default_value("0"))]
+    #[clap(
+        short = 'd',
+        long = "debug",
+        value_name = "debug level",
+        default_value("0")
+    )]
     debug_level: u32,
 }
 
 fn main() {
     let args = Args::parse();
-    let debug_level=args.debug_level;
+    let debug_level = args.debug_level;
 
     let cmds: Vec<CtrlMsg> = from_reader(File::open(&args.cmd).expect("file not open")).unwrap();
 
@@ -58,10 +63,10 @@ fn main() {
             let mut buf = vec![0_u8; 9000];
             while let Ok((l, a)) = socket.recv_from(&mut buf) {
                 //let (_s, _a)=socket.recv_from(&mut buf).unwrap();
-                if debug_level >=1 {
-                    println!("received {} bytes, {} words from {:?}:", l, l/4, a);
+                if debug_level >= 1 {
+                    println!("received {} bytes, {} words from {:?}:", l, l / 4, a);
                     print_bytes(&buf[..l]);
-                }                
+                }
                 let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
                 let mut cursor = Cursor::new(buf1);
                 let reply = CtrlMsg::read(&mut cursor).unwrap();
@@ -85,11 +90,11 @@ fn main() {
         let mut buf = vec![0_u8; 9000];
         let (l, a) = socket.recv_from(&mut buf).unwrap();
 
-        if debug_level>=1{
-            println!("received {} bytes, {} words from {:?}:", l, l/4, a);
+        if debug_level >= 1 {
+            println!("received {} bytes, {} words from {:?}:", l, l / 4, a);
             print_bytes(&buf[..l]);
         }
-        
+
         let mut cursor = Cursor::new(buf);
         let reply = CtrlMsg::read(&mut cursor).unwrap();
         println!("{}", reply);

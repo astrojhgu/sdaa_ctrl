@@ -61,7 +61,14 @@ pub enum Health {
         vcc1v8: u32,
         mgtavtt1v2: u32,
         mgtavtt1v0: u32,
-        temperatures: [u32;2],
+        temperatures: [u32; 2],
+    },
+
+    #[brw(magic(0x12_34_56_78_u32))]
+    TEHealth {
+        nhealth: u32,
+        #[br(count=nhealth)]
+        payload: Vec<u32>,
     },
 }
 
@@ -100,9 +107,12 @@ pub enum CtrlMsg {
     #[brw(magic(0x04_u32))]
     I2CScan { msg_id: u32 },
     #[brw(magic(0xff_00_00_04_u32))]
-    I2CScanReply { msg_id: u32, ndev: u32, 
+    I2CScanReply {
+        msg_id: u32,
+        ndev: u32,
         #[br(count=ndev)]
-        payload: Vec<u8> },
+        payload: Vec<u8>,
+    },
     #[brw(magic(0x01_04_u32))]
     I2CWrite {
         msg_id: u32,
@@ -231,7 +241,11 @@ impl Display for CtrlMsg {
             CtrlMsg::I2CScan { msg_id } => {
                 writeln!(f, "I2CScan{{msg_id: {msg_id}}}")
             }
-            CtrlMsg::I2CScanReply { msg_id, ndev, payload } => {
+            CtrlMsg::I2CScanReply {
+                msg_id,
+                ndev,
+                payload,
+            } => {
                 write!(f, "I2CScanReply{{msg_id: {msg_id}, ndev: {ndev}, payload: ")?;
                 for &x in payload {
                     write!(f, "{x:02x} ")?;
@@ -291,7 +305,10 @@ impl Display for CtrlMsg {
                 len: _,
                 payload,
             } => {
-                write!(f, "I2CReadReply{{ msg_id: {msg_id}, err_code: {err_code:x}, payload:")?;
+                write!(
+                    f,
+                    "I2CReadReply{{ msg_id: {msg_id}, err_code: {err_code:x}, payload:"
+                )?;
                 for &x in payload {
                     write!(f, " {x:02x}")?;
                 }
@@ -349,10 +366,7 @@ impl Display for CtrlMsg {
                     "VGACtrlReply{{msg_id: {msg_id}, err_code: 0x{err_code:x}}}"
                 )
             }
-            CtrlMsg::PwrCtrl {
-                msg_id,
-                op_code,
-            } => {
+            CtrlMsg::PwrCtrl { msg_id, op_code } => {
                 writeln!(f, "PwrCtrl{{msg_id: {msg_id}, op_code: {op_code}}}")
             }
             CtrlMsg::PwrCtrlReply { msg_id } => {
@@ -361,7 +375,7 @@ impl Display for CtrlMsg {
 
             CtrlMsg::Init {
                 msg_id,
-                reserved_zeros:_,
+                reserved_zeros: _,
             } => {
                 writeln!(f, "Init {{msg_id: {msg_id}}}")
             }
