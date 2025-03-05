@@ -64,7 +64,7 @@ pub enum Health {
         temperatures: [u32; 2],
     },
 
-    #[brw(magic(0x12_34_56_78_u32))]
+    #[brw(magic(0x78_56_34_12_u32))]
     TEHealth {
         nhealth: u32,
         #[br(count=nhealth)]
