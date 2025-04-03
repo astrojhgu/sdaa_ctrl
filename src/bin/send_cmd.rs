@@ -1,9 +1,9 @@
-use std::{collections::BTreeSet, fs::File, io::Cursor, net::UdpSocket};
-
 use binrw::{BinRead, BinWrite};
+use chrono::Local;
 use clap::Parser;
 use sdand_ctrl::ctrl_msg::{print_bytes, CtrlMsg};
 use serde_yaml::from_reader;
+use std::{collections::BTreeSet, fs::File, io::Cursor, net::UdpSocket};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -55,7 +55,11 @@ fn main() {
             let buf = buf.into_inner();
             socket.send_to(&buf, addr).expect("send error");
 
-            println!("msg with id={} sent", msg_id);
+            println!(
+                "{} msg with id={} sent",
+                Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                msg_id,
+            );
             print_bytes(&buf);
 
             println!("{:?}", c);
@@ -64,17 +68,32 @@ fn main() {
             while let Ok((l, a)) = socket.recv_from(&mut buf) {
                 //let (_s, _a)=socket.recv_from(&mut buf).unwrap();
                 if debug_level >= 1 {
-                    println!("received {} bytes, {} words from {:?}:", l, l / 4, a);
+                    println!(
+                        "{} received {} bytes, {} words from {:?}:",
+                        Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                        l,
+                        l / 4,
+                        a
+                    );
                     print_bytes(&buf[..l]);
                 }
                 let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
                 let mut cursor = Cursor::new(buf1);
                 let reply = CtrlMsg::read(&mut cursor).unwrap();
                 if let CtrlMsg::InvalidMsg { .. } = reply {
-                    println!("Invalid msg {:?}", reply);
+                    println!(
+                        "{} Invalid msg {:?}",
+                        Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                        reply
+                    );
                 }
                 let msg_id = reply.get_msg_id();
-                println!("msg with id={} replied from {:?}", msg_id, a);
+                println!(
+                    "{} msg with id={} replied from {:?}",
+                    Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                    msg_id,
+                    a
+                );
                 assert!(msg_set.remove(&msg_id));
             }
             msg_id += 1;
@@ -91,18 +110,29 @@ fn main() {
         let (l, a) = socket.recv_from(&mut buf).unwrap();
 
         if debug_level >= 1 {
-            println!("received {} bytes, {} words from {:?}:", l, l / 4, a);
+            println!(
+                "{} received {} bytes, {} words from {:?}:",
+                Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                l,
+                l / 4,
+                a
+            );
             print_bytes(&buf[..l]);
         }
 
         let mut cursor = Cursor::new(buf);
         let reply = CtrlMsg::read(&mut cursor).unwrap();
-        println!("{}", reply);
+        println!("{} \n{}", Local::now().format("%Y-%m-%d %H:%M:%S%.3f"), reply);
         if let CtrlMsg::InvalidMsg { .. } = reply {
             println!("Invalid msg received");
         }
         let msg_id = reply.get_msg_id();
-        println!("msg with id={} replied from {:?}", msg_id, a);
+        println!(
+            "{} msg with id={} replied from {:?}",
+            Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+            msg_id,
+            a
+        );
         assert!(msg_set.remove(&msg_id));
     }
     println!("==all replies have been received. Bye!==");
