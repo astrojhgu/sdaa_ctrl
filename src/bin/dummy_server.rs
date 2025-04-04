@@ -9,7 +9,7 @@ struct Args {
 }
 
 use binrw::{BinRead, BinWrite};
-use sdand_ctrl::ctrl_msg::{
+use sdaa_ctrl::ctrl_msg::{
     print_bytes,
     CtrlMsg::{self, *},
     Health,

@@ -1,7 +1,7 @@
 use std::fs::File;
 
 use binrw::BinWrite;
-use sdand_ctrl::ctrl_msg::{CtrlMsg, XGbeCfg};
+use sdaa_ctrl::ctrl_msg::{CtrlMsg, XGbeCfg};
 use serde_yaml::to_writer;
 fn main() {
     let xgbecfg = XGbeCfg {

@@ -1,5 +1,5 @@
 use clap::Parser;
-use sdand_ctrl::ctrl_msg::{send_cmd, CtrlMsg};
+use sdaa_ctrl::ctrl_msg::{send_cmd, CtrlMsg};
 use serde_yaml::from_reader;
 use std::{fs::File, time::Duration};
 
