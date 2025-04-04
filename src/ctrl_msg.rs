@@ -1,6 +1,13 @@
-use std::fmt::Display;
+use std::{
+    collections::BTreeSet,
+    fmt::Display,
+    io::Cursor,
+    net::{ToSocketAddrs, UdpSocket},
+    time::Duration,
+};
 
-use binrw::binrw;
+use binrw::{binrw, BinRead, BinWrite};
+use chrono::Local;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
@@ -467,4 +474,140 @@ pub fn print_bytes(x: &[u8]) {
         print!("| {i:02} {}:{}", i * 4, i * 4 + 3);
         println!();
     }
+}
+
+#[derive(Default, Debug)]
+pub struct CmdReplySummary {
+    pub no_reply: Vec<usize>,
+    pub invalid_reply: Vec<(usize, CtrlMsg)>,
+}
+
+pub fn send_cmd<A, B>(
+    mut cmd: CtrlMsg,
+    targets: &[A],
+    local_addr: B,
+    timeout: Option<Duration>,
+    debug_level: u32,
+) -> CmdReplySummary
+where
+    A: ToSocketAddrs,
+    B: ToSocketAddrs,
+{
+    let socket = UdpSocket::bind(local_addr).unwrap();
+    socket.set_broadcast(true).expect("broadcast set failed");
+    socket
+        .set_nonblocking(true)
+        .expect("nonblocking set failed");
+
+    socket
+        .set_read_timeout(timeout)
+        .expect("failed to set timeout");
+
+    let mut msg_set = BTreeSet::new();
+    let mut reply_summary = CmdReplySummary::default();
+    for (i, addr) in targets.iter().enumerate() {
+        cmd.set_msg_id(i as u32);
+        msg_set.insert(i as u32);
+        let mut buf = Cursor::new(Vec::new());
+        cmd.write(&mut buf).unwrap();
+        let buf = buf.into_inner();
+        socket.send_to(&buf, addr).expect("send error");
+
+        println!(
+            "{} msg with id={} sent",
+            Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+            i,
+        );
+        print_bytes(&buf);
+
+        println!("{:?}", cmd);
+
+        let mut buf = vec![0_u8; 9000];
+        while let Ok((l, a)) = socket.recv_from(&mut buf) {
+            //let (_s, _a)=socket.recv_from(&mut buf).unwrap();
+            if debug_level >= 1 {
+                println!(
+                    "{} received {} bytes, {} words from {:?}:",
+                    Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                    l,
+                    l / 4,
+                    a
+                );
+                print_bytes(&buf[..l]);
+            }
+            let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
+            let mut cursor = Cursor::new(buf1);
+            let reply = CtrlMsg::read(&mut cursor).unwrap();
+
+            let msg_id = reply.get_msg_id();
+            if let CtrlMsg::InvalidMsg { .. } = reply {
+                println!(
+                    "{} Invalid msg {:?}",
+                    Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                    reply
+                );
+                reply_summary.invalid_reply.push((msg_id as usize, reply));
+            }
+
+            println!(
+                "{} msg with id={} replied from {:?}",
+                Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                msg_id,
+                a
+            );
+            let x = msg_set.remove(&msg_id);
+            assert!(x);
+        }
+    }
+
+    println!("==waiting for the rest replies==");
+    socket
+        .set_nonblocking(false)
+        .expect("nonblocking set failed");
+
+    let mut buf = vec![0_u8; 9000];
+
+    if !msg_set.is_empty() {
+        while let Ok((l, a)) = socket.recv_from(&mut buf) {
+            if debug_level >= 1 {
+                println!(
+                    "{} received {} bytes, {} words from {:?}:",
+                    Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                    l,
+                    l / 4,
+                    a
+                );
+                print_bytes(&buf[..l]);
+            }
+
+            let mut cursor = Cursor::new(buf.clone());
+            let reply = CtrlMsg::read(&mut cursor).unwrap();
+            println!(
+                "{} \n{}",
+                Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                reply
+            );
+
+            let msg_id = reply.get_msg_id();
+
+            if let CtrlMsg::InvalidMsg { .. } = reply {
+                println!("Invalid msg received");
+                reply_summary.invalid_reply.push((msg_id as usize, reply));
+            }
+
+            println!(
+                "{} msg with id={} replied from {:?}",
+                Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                msg_id,
+                a
+            );
+            let x = msg_set.remove(&msg_id);
+            assert!(x);
+            if msg_set.is_empty() {
+                break;
+            }
+        }
+    }
+    reply_summary.no_reply = msg_set.into_iter().map(|i| i as usize).collect();
+    reply_summary
 }
