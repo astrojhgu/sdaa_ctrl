@@ -10,6 +10,8 @@ use binrw::{binrw, BinRead, BinWrite};
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 
+use rand::{rng, Rng};
+
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 #[binrw]
 #[brw(little)]
@@ -504,11 +506,13 @@ where
         .set_read_timeout(timeout)
         .expect("failed to set timeout");
 
+    let mut rng1 = rng();
     let mut msg_set = BTreeSet::new();
     let mut reply_summary = CmdReplySummary::default();
-    for (i, addr) in targets.iter().enumerate() {
-        cmd.set_msg_id(i as u32);
-        msg_set.insert(i as u32);
+    for (_i, addr) in targets.iter().enumerate() {
+        let msg_id: u32 = rng1.random();
+        cmd.set_msg_id(msg_id);
+        msg_set.insert(msg_id);
         let mut buf = Cursor::new(Vec::new());
         cmd.write(&mut buf).unwrap();
         let buf = buf.into_inner();
@@ -517,7 +521,7 @@ where
         println!(
             "{} msg with id={} sent",
             Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
-            i,
+            msg_id,
         );
         print_bytes(&buf);
 
