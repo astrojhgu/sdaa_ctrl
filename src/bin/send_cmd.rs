@@ -56,8 +56,8 @@ fn main() {
 
         if !summary.invalid_reply.is_empty() {
             println!("Invalid reply:");
-            for (i, r) in summary.invalid_reply {
-                println!("{} {}", args.addr[i], r);
+            for (a, r) in summary.invalid_reply {
+                println!("{} {}", a, r);
             }
         }
     }

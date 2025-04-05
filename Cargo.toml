@@ -9,3 +9,8 @@ clap = { version = '4.5.35', features = ['derive'] }
 serde = { version = '1.0.144', features = ['derive'] }
 serde_yaml = '0.9.13'
 chrono = '0.4.40'
+
+
+[lib]
+name = "sdaa_ctrl"
+crate-type = ["staticlib","cdylib", "rlib"]
