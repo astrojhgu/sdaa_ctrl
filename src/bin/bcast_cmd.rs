@@ -1,13 +1,13 @@
 use clap::Parser;
-use sdaa_ctrl::ctrl_msg::{send_cmd, CtrlMsg};
+use sdaa_ctrl::ctrl_msg::{bcast_cmd, CtrlMsg};
 use serde_yaml::from_reader;
 use std::{fs::File, time::Duration};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    #[clap(short = 'a', long = "addr", num_args(1..), value_name = "<ip:port> ...")]
-    addr: Vec<String>,
+    #[clap(short = 'a', long = "addr", value_name = "<bcast_addr:port>")]
+    addr: String,
 
     #[clap(
         short = 'L',
@@ -38,26 +38,24 @@ fn main() {
 
     let cmds: Vec<CtrlMsg> = from_reader(File::open(&args.cmd).expect("file not open")).unwrap();
     for c in cmds {
-        let summary = send_cmd(
+        let summary = bcast_cmd(
             c,
             &args.addr,
             &args.local_addr,
             Some(Duration::from_secs(args.timeout)),
             debug_level,
         );
-        if summary.no_reply.is_empty() {
-            println!("all replied");
-        } else {
-            println!("not replied:");
-            for (addr,msg_id) in &summary.no_reply {
-                println!("{:?} {}", addr, msg_id);
-            }
+
+        println!("replied:");
+
+        for (a, r) in &summary.normal_reply {
+            println!("{} \n{}", a, r);
         }
 
         if !summary.invalid_reply.is_empty() {
             println!("Invalid reply:");
             for (a, r) in summary.invalid_reply {
-                println!("{} {}", a, r);
+                println!("{} \n{}", a, r);
             }
         }
     }

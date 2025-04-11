@@ -1,5 +1,5 @@
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     fmt::Display,
     io::Cursor,
     net::{SocketAddr, ToSocketAddrs, UdpSocket},
@@ -480,7 +480,7 @@ pub fn print_bytes(x: &[u8]) {
 
 #[derive(Default, Debug)]
 pub struct CmdReplySummary {
-    pub no_reply: Vec<usize>,
+    pub no_reply: Vec<(Vec<SocketAddr>, u32)>,
     pub invalid_reply: Vec<(SocketAddr, CtrlMsg)>,
     pub normal_reply: Vec<(SocketAddr, CtrlMsg)>,
 }
@@ -508,11 +508,13 @@ where
 
     let mut rng1 = rng();
     let mut msg_set = BTreeSet::new();
+    let mut addr_msg_id_map = BTreeMap::<u32, Vec<SocketAddr>>::new();
     let mut reply_summary = CmdReplySummary::default();
     for (_i, addr) in targets.iter().enumerate() {
         let msg_id: u32 = rng1.random();
         cmd.set_msg_id(msg_id);
         msg_set.insert(msg_id);
+        addr_msg_id_map.insert(msg_id, addr.to_socket_addrs().unwrap().collect::<Vec<_>>());
         let mut buf = Cursor::new(Vec::new());
         cmd.write(&mut buf).unwrap();
         let buf = buf.into_inner();
@@ -617,7 +619,10 @@ where
             }
         }
     }
-    reply_summary.no_reply = msg_set.into_iter().map(|i| i as usize).collect();
+    //reply_summary.no_reply = msg_set.into_iter().map(|i| i as usize).collect();
+    reply_summary.no_reply = addr_msg_id_map.iter().filter(|&(k,v)|{
+        msg_set.contains(k)
+    }).map(|(&k,v)| (v.clone(), k)).collect();
     reply_summary
 }
 
