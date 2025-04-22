@@ -7,7 +7,6 @@ use std::{
 
 use crate::ctrl_msg::{bcast_cmd, send_cmd, CtrlMsg};
 
-
 /// # Safety
 ///
 /// This function should not be called before the horsemen are ready.
@@ -55,7 +54,6 @@ pub unsafe extern "C" fn find_device(
     }
     nresult
 }
-
 
 /// # Safety
 ///
@@ -115,7 +113,6 @@ pub unsafe extern "C" fn unmake_device(addr: *const c_char, local_port: u16) -> 
 
     true
 }
-
 
 /// # Safety
 ///

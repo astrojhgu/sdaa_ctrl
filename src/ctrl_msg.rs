@@ -620,9 +620,11 @@ where
         }
     }
     //reply_summary.no_reply = msg_set.into_iter().map(|i| i as usize).collect();
-    reply_summary.no_reply = addr_msg_id_map.iter().filter(|&(k,_v)|{
-        msg_set.contains(k)
-    }).map(|(&k,v)| (v.clone(), k)).collect();
+    reply_summary.no_reply = addr_msg_id_map
+        .iter()
+        .filter(|&(k, _v)| msg_set.contains(k))
+        .map(|(&k, v)| (v.clone(), k))
+        .collect();
     reply_summary
 }
 

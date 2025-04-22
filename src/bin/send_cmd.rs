@@ -49,7 +49,7 @@ fn main() {
             println!("all replied");
         } else {
             println!("not replied:");
-            for (addr,msg_id) in &summary.no_reply {
+            for (addr, msg_id) in &summary.no_reply {
                 println!("{:?} {}", addr, msg_id);
             }
         }
