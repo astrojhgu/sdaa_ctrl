@@ -510,7 +510,7 @@ where
     let mut msg_set = BTreeSet::new();
     let mut addr_msg_id_map = BTreeMap::<u32, Vec<SocketAddr>>::new();
     let mut reply_summary = CmdReplySummary::default();
-    for (_i, addr) in targets.iter().enumerate() {
+    for addr in targets.iter() {
         let msg_id: u32 = rng1.random();
         cmd.set_msg_id(msg_id);
         msg_set.insert(msg_id);
@@ -620,7 +620,7 @@ where
         }
     }
     //reply_summary.no_reply = msg_set.into_iter().map(|i| i as usize).collect();
-    reply_summary.no_reply = addr_msg_id_map.iter().filter(|&(k,v)|{
+    reply_summary.no_reply = addr_msg_id_map.iter().filter(|&(k,_v)|{
         msg_set.contains(k)
     }).map(|(&k,v)| (v.clone(), k)).collect();
     reply_summary
@@ -649,7 +649,7 @@ where
 
     let mut reply_summary = CmdReplySummary::default();
 
-    cmd.set_msg_id(0 as u32);
+    cmd.set_msg_id(0_u32);
 
     let mut buf = Cursor::new(Vec::new());
     cmd.write(&mut buf).unwrap();

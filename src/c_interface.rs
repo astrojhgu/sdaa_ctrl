@@ -7,6 +7,10 @@ use std::{
 
 use crate::ctrl_msg::{bcast_cmd, send_cmd, CtrlMsg};
 
+
+/// # Safety
+///
+/// This function should not be called before the horsemen are ready.
 #[no_mangle]
 pub unsafe extern "C" fn find_device(
     addr: *const c_char,
@@ -52,6 +56,10 @@ pub unsafe extern "C" fn find_device(
     nresult
 }
 
+
+/// # Safety
+///
+/// This function should not be called before the horsemen are ready.
 #[no_mangle]
 pub unsafe extern "C" fn make_device(addr: *const c_char, local_port: u16) -> bool {
     let c_str = CStr::from_ptr(addr);
@@ -75,7 +83,7 @@ pub unsafe extern "C" fn make_device(addr: *const c_char, local_port: u16) -> bo
     //     return false;
     // }
     let cmd = CtrlMsg::Sync { msg_id: 0 };
-    let summary = send_cmd(cmd, &addr, local_addr, Some(Duration::from_secs(5)), 1);
+    let _summary = send_cmd(cmd, &addr, local_addr, Some(Duration::from_secs(5)), 1);
 
     // if summary.normal_reply.len() != 1 {
     //     return false;
@@ -84,6 +92,9 @@ pub unsafe extern "C" fn make_device(addr: *const c_char, local_port: u16) -> bo
     true
 }
 
+/// # Safety
+///
+/// This function should not be called before the horsemen are ready.
 #[no_mangle]
 pub unsafe extern "C" fn unmake_device(addr: *const c_char, local_port: u16) -> bool {
     let c_str = CStr::from_ptr(addr);
@@ -105,6 +116,10 @@ pub unsafe extern "C" fn unmake_device(addr: *const c_char, local_port: u16) -> 
     true
 }
 
+
+/// # Safety
+///
+/// This function should not be called before the horsemen are ready.
 #[no_mangle]
 pub unsafe extern "C" fn start_stream(addr: *const c_char, local_port: u16) -> bool {
     let c_str = CStr::from_ptr(addr);
