@@ -1,29 +1,27 @@
 use std::{
     ffi::{c_char, CStr},
-    net::SocketAddr,
+    net::{Ipv4Addr, SocketAddr, SocketAddrV4},
     slice::from_raw_parts_mut,
     time::Duration,
 };
 
 use crate::ctrl_msg::{bcast_cmd, send_cmd, CtrlMsg};
 
+
 /// # Safety
 ///
 /// This function should not be called before the horsemen are ready.
 #[no_mangle]
 pub unsafe extern "C" fn find_device(
-    addr: *const c_char,
+    addr: u32,
     result: *mut u32,
     max_n: usize,
     local_port: u16,
 ) -> usize {
-    let buf = from_raw_parts_mut(result, max_n);
-    let c_str = CStr::from_ptr(addr);
-    let addr = if let Ok(s) = c_str.to_str() {
-        format!("{}:3000", s)
-    } else {
-        return 0;
-    };
+    let result = from_raw_parts_mut(result, max_n);
+    let ip = Ipv4Addr::from(addr);
+
+    let addr = SocketAddrV4::new(ip, 3000);
 
     let query = CtrlMsg::Query { msg_id: 0 };
 
@@ -49,7 +47,7 @@ pub unsafe extern "C" fn find_device(
             if nresult >= max_n {
                 break;
             }
-            buf[nresult - 1] = r;
+            result[nresult - 1] = r;
         }
     }
     nresult
@@ -59,13 +57,9 @@ pub unsafe extern "C" fn find_device(
 ///
 /// This function should not be called before the horsemen are ready.
 #[no_mangle]
-pub unsafe extern "C" fn make_device(addr: *const c_char, local_port: u16) -> bool {
-    let c_str = CStr::from_ptr(addr);
-    let addr = vec![if let Ok(s) = c_str.to_str() {
-        format!("{}:3000", s)
-    } else {
-        return false;
-    }];
+pub unsafe extern "C" fn make_device(ip: u32, local_port: u16) -> bool {
+    let ip = Ipv4Addr::from(ip);
+    let addr = SocketAddrV4::new(ip, 3000);
 
     let local_addr = format!("0.0.0.0:{}", local_port);
 
@@ -73,7 +67,7 @@ pub unsafe extern "C" fn make_device(addr: *const c_char, local_port: u16) -> bo
         msg_id: 0,
         reserved_zeros: 0,
     };
-    let summary = send_cmd(cmd, &addr, &local_addr, Some(Duration::from_secs(5)), 1);
+    let summary = send_cmd(cmd, &[addr], &local_addr, Some(Duration::from_secs(5)), 1);
 
     println!("{:?}", summary);
 
@@ -81,7 +75,7 @@ pub unsafe extern "C" fn make_device(addr: *const c_char, local_port: u16) -> bo
     //     return false;
     // }
     let cmd = CtrlMsg::Sync { msg_id: 0 };
-    let _summary = send_cmd(cmd, &addr, local_addr, Some(Duration::from_secs(5)), 1);
+    let _summary = send_cmd(cmd, &[addr], local_addr, Some(Duration::from_secs(5)), 1);
 
     // if summary.normal_reply.len() != 1 {
     //     return false;
@@ -94,19 +88,15 @@ pub unsafe extern "C" fn make_device(addr: *const c_char, local_port: u16) -> bo
 ///
 /// This function should not be called before the horsemen are ready.
 #[no_mangle]
-pub unsafe extern "C" fn unmake_device(addr: *const c_char, local_port: u16) -> bool {
-    let c_str = CStr::from_ptr(addr);
-    let addr = vec![if let Ok(s) = c_str.to_str() {
-        format!("{}:3000", s)
-    } else {
-        return false;
-    }];
+pub unsafe extern "C" fn unmake_device(ip: u32, local_port: u16) -> bool {
+    let ip = Ipv4Addr::from(ip);
+    let addr = SocketAddrV4::new(ip, 3000);
 
     let local_addr = format!("0.0.0.0:{}", local_port);
 
     let cmd = CtrlMsg::StreamStop { msg_id: 0 };
 
-    let summary = send_cmd(cmd, &addr, &local_addr, Some(Duration::from_secs(5)), 1);
+    let summary = send_cmd(cmd, &[addr], &local_addr, Some(Duration::from_secs(5)), 1);
     if summary.normal_reply.len() != 1 {
         return false;
     }
@@ -118,19 +108,15 @@ pub unsafe extern "C" fn unmake_device(addr: *const c_char, local_port: u16) -> 
 ///
 /// This function should not be called before the horsemen are ready.
 #[no_mangle]
-pub unsafe extern "C" fn start_stream(addr: *const c_char, local_port: u16) -> bool {
-    let c_str = CStr::from_ptr(addr);
-    let addr = vec![if let Ok(s) = c_str.to_str() {
-        format!("{}:3000", s)
-    } else {
-        return false;
-    }];
+pub unsafe extern "C" fn start_stream(ip: u32, local_port: u16) -> bool {
+    let ip = Ipv4Addr::from(ip);
+    let addr = SocketAddrV4::new(ip, 3000);
 
     let local_addr = format!("0.0.0.0:{}", local_port);
 
     let cmd = CtrlMsg::StreamStart { msg_id: 0 };
 
-    let summary = send_cmd(cmd, &addr, &local_addr, Some(Duration::from_secs(5)), 1);
+    let summary = send_cmd(cmd, &[addr], &local_addr, Some(Duration::from_secs(5)), 1);
     if summary.normal_reply.len() != 1 {
         return false;
     }
