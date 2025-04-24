@@ -1,5 +1,5 @@
 language = "C++"
-include_guard = "SDAA_DATA_H"
+include_guard = "SDAA_CTRL_H"
 namespace = "sdaa"
 
 [defines]

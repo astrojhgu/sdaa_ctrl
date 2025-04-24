@@ -1,11 +1,13 @@
 use std::env;
 use std::fs;
 use std::path::Path;
-use std::process::Command;
+
 
 fn main() {
     println!("cargo:rerun-if-changed=src/");
+    println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=Cargo.toml");
+    println!("cargo:rerun-if-changed=cbindgen.toml");
 
     // 获取 crate 根路径
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -19,21 +21,10 @@ fn main() {
     // 生成头文件路径
     let header_path = include_dir.join("sdaa_ctrl.h");
 
-    // 执行 cbindgen 命令
-    if let Ok(status) = Command::new("cbindgen")
-        .arg("--config")
-        .arg("cbindgen.toml") // 可选：可省略
-        .arg("--crate")
-        .arg("sdaa_ctrl") // ⚠️ 替换为你的 crate 名
-        .arg("--output")
-        .arg(header_path)
-        .current_dir(&crate_dir)
-        .status()
-    {
-        if !status.success() {
-            eprintln!("cbindgen failed");
-        }
-    } else {
-        eprintln!("cbindgen failed");
-    }
+    cbindgen::Builder::new()
+        .with_crate(crate_dir)
+        .with_config(cbindgen::Config::from_file("cbindgen.toml").unwrap())
+        .generate()
+        .unwrap()
+        .write_to_file(header_path);
 }

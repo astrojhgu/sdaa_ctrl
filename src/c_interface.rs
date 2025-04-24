@@ -1,5 +1,4 @@
 use std::{
-    ffi::{c_char, CStr},
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
     slice::from_raw_parts_mut,
     time::Duration,

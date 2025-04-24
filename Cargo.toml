@@ -13,6 +13,7 @@ rand = '0.9.1'
 
 [build-dependencies]
 bindgen = "0.71.1"
+cbindgen = "0.28.0"
 
 [lib]
 name = "sdaa_ctrl"

@@ -639,6 +639,7 @@ where
     A: ToSocketAddrs,
     B: ToSocketAddrs,
 {
+    let mut rng1=rng();
     let socket = UdpSocket::bind(local_addr).unwrap();
     socket.set_broadcast(true).expect("broadcast set failed");
     socket
@@ -651,7 +652,8 @@ where
 
     let mut reply_summary = CmdReplySummary::default();
 
-    cmd.set_msg_id(0_u32);
+    let msg_id: u32 = rng1.random();
+    cmd.set_msg_id(msg_id);
 
     let mut buf = Cursor::new(Vec::new());
     cmd.write(&mut buf).unwrap();
