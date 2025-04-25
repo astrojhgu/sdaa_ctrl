@@ -210,7 +210,7 @@ impl Display for CtrlMsg {
                 len: _,
                 description,
             } => {
-                let desc = String::from_utf8(description.clone()).unwrap();
+                let desc = String::from_utf8(description.clone()).expect("failed to convert to utf8 str");
                 writeln!(
                     f,
                     "InvalidMsg:{{ msg_id: {msg_id}, err_code: {err_code}, desc: {desc} }}"
@@ -496,7 +496,7 @@ where
     A: ToSocketAddrs,
     B: ToSocketAddrs,
 {
-    let socket = UdpSocket::bind(local_addr).unwrap();
+    let socket = UdpSocket::bind(local_addr).expect("faild to bind addr");
     socket.set_broadcast(true).expect("broadcast set failed");
     socket
         .set_nonblocking(true)
@@ -514,9 +514,9 @@ where
         let msg_id: u32 = rng1.random();
         cmd.set_msg_id(msg_id);
         msg_set.insert(msg_id);
-        addr_msg_id_map.insert(msg_id, addr.to_socket_addrs().unwrap().collect::<Vec<_>>());
+        addr_msg_id_map.insert(msg_id, addr.to_socket_addrs().expect("faild to get socket addr").collect::<Vec<_>>());
         let mut buf = Cursor::new(Vec::new());
-        cmd.write(&mut buf).unwrap();
+        cmd.write(&mut buf).expect("failed to write cmd to buf");
         let buf = buf.into_inner();
         socket.send_to(&buf, addr).expect("send error");
 
@@ -544,7 +544,7 @@ where
             }
             let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
             let mut cursor = Cursor::new(buf1);
-            let reply = CtrlMsg::read(&mut cursor).unwrap();
+            let reply = CtrlMsg::read(&mut cursor).expect("failed to read reply");
 
             let msg_id = reply.get_msg_id();
             if let CtrlMsg::InvalidMsg { .. } = reply {
@@ -590,7 +590,7 @@ where
             }
 
             let mut cursor = Cursor::new(buf.clone());
-            let reply = CtrlMsg::read(&mut cursor).unwrap();
+            let reply = CtrlMsg::read(&mut cursor).expect("failed to read reply");
             println!(
                 "{} \n{}",
                 Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
@@ -640,7 +640,7 @@ where
     B: ToSocketAddrs,
 {
     let mut rng1=rng();
-    let socket = UdpSocket::bind(local_addr).unwrap();
+    let socket = UdpSocket::bind(local_addr).expect("failed to bind");
     socket.set_broadcast(true).expect("broadcast set failed");
     socket
         .set_nonblocking(true)
@@ -656,7 +656,7 @@ where
     cmd.set_msg_id(msg_id);
 
     let mut buf = Cursor::new(Vec::new());
-    cmd.write(&mut buf).unwrap();
+    cmd.write(&mut buf).expect("failed to write cmd to buf");
     let buf = buf.into_inner();
     socket.send_to(&buf, baddr).expect("send error");
 
@@ -684,7 +684,7 @@ where
         }
         let buf1 = std::mem::replace(&mut buf, vec![0_u8; 9000]);
         let mut cursor = Cursor::new(buf1);
-        let reply = CtrlMsg::read(&mut cursor).unwrap();
+        let reply = CtrlMsg::read(&mut cursor).expect("failed to read reply");
 
         let msg_id = reply.get_msg_id();
         if let CtrlMsg::InvalidMsg { .. } = reply {
@@ -726,7 +726,7 @@ where
         }
 
         let mut cursor = Cursor::new(buf.clone());
-        let reply = CtrlMsg::read(&mut cursor).unwrap();
+        let reply = CtrlMsg::read(&mut cursor).expect("failed to read reply");
         println!(
             "{} \n{}",
             Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),

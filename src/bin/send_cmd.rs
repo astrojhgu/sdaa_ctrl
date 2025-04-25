@@ -36,7 +36,7 @@ fn main() {
     let args = Args::parse();
     let debug_level = args.debug_level;
 
-    let cmds: Vec<CtrlMsg> = from_reader(File::open(&args.cmd).expect("file not open")).unwrap();
+    let cmds: Vec<CtrlMsg> = from_reader(File::open(&args.cmd).expect("file not open")).expect("failed to load cmd");
     for c in cmds {
         let summary = send_cmd(
             c,
