@@ -198,6 +198,22 @@ pub enum CtrlMsg {
     Init { msg_id: u32, reserved_zeros: u32 },
     #[brw(magic(0xff_00_00_08_u32))]
     InitReply { msg_id: u32 },
+
+    #[brw(magic(0x0a_u32))]
+    XGbeCfgSingle{msg_id: u32, port_id: u32, cfg: XGbeCfg},
+
+    #[brw(magic(0xff_00_00_0a_u32))]
+    XGbeCfgSingleReply{msg_id: u32},
+
+    #[brw(magic(0x0b_u32))]
+    XGbeCfgQuery{msg_id: u32},
+
+    #[brw(magic(0xff_00_00_0b_u32))]
+    XGbeCfgQueryReply{msg_id: u32, 
+        nports: u32, 
+        #[br(count=nports)]
+        cfg:Vec<XGbeCfg>
+    },
 }
 
 impl Display for CtrlMsg {
@@ -392,6 +408,22 @@ impl Display for CtrlMsg {
             CtrlMsg::InitReply { msg_id } => {
                 writeln!(f, "InitReply {{msg_id: {msg_id}}}")
             }
+
+            CtrlMsg::XGbeCfgSingle { msg_id, port_id, cfg }=>{
+                writeln!(f, "XgbeCfgSingle {{msg_id: {msg_id}, port_id: {port_id}, cfg: {cfg}}}")
+            }
+
+            CtrlMsg::XGbeCfgSingleReply { msg_id }=>{
+                writeln!(f, "XgbeCfgSingleReply {{msg_id: {msg_id}}}")
+            }
+
+            CtrlMsg::XGbeCfgQuery { msg_id }=>{
+                writeln!(f, "XgbeCfgQuery {{msg_id: {msg_id}}}")
+            }
+
+            CtrlMsg::XGbeCfgQueryReply { msg_id, nports, cfg }=>{
+                writeln!(f, "XgbeCfgQueryReply {{msg_id: {msg_id}, nports: {nports}, cfg: {cfg:?}}}")
+            }
         }?;
         writeln!(f, "=====================")
     }
@@ -428,6 +460,10 @@ impl CtrlMsg {
             PwrCtrlReply { msg_id, .. } => *msg_id = mid,
             Init { msg_id, .. } => *msg_id = mid,
             InitReply { msg_id, .. } => *msg_id = mid,
+            XGbeCfgQuery { msg_id }=>*msg_id=mid,
+            XGbeCfgQueryReply { msg_id, nports:_, cfg:_a }=>*msg_id=mid,
+            XGbeCfgSingle { msg_id, port_id:_, cfg:_ }=>*msg_id=mid,
+            XGbeCfgSingleReply { msg_id }=>*msg_id=mid,
         }
     }
 
@@ -464,6 +500,11 @@ impl CtrlMsg {
                 reserved_zeros: _,
             } => *msg_id,
             InitReply { msg_id } => *msg_id,
+
+            XGbeCfgQuery { msg_id }=>*msg_id,
+            XGbeCfgQueryReply { msg_id, nports:_, cfg:_a }=>*msg_id,
+            XGbeCfgSingle { msg_id, port_id:_, cfg:_ }=>*msg_id,
+            XGbeCfgSingleReply { msg_id }=>*msg_id,
         }
     }
 }
