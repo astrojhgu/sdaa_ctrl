@@ -39,7 +39,7 @@ impl Display for XGbeCfg {
         )?;
         write!(f, "(")?;
         for x in self.src_mac {
-            write!(f, " {x:02x}")?
+            write!(f, "0x{x:02x},")?
         }
         write!(f, ") -> ")?;
         write!(
@@ -49,7 +49,7 @@ impl Display for XGbeCfg {
         )?;
         write!(f, "(")?;
         for x in self.dst_mac {
-            write!(f, " {x:02x}")?
+            write!(f, "0x{x:02x},")?
         }
         write!(f, ")")
     }
@@ -422,7 +422,12 @@ impl Display for CtrlMsg {
             }
 
             CtrlMsg::XGbeCfgQueryReply { msg_id, nports, cfg }=>{
-                writeln!(f, "XgbeCfgQueryReply {{msg_id: {msg_id}, nports: {nports}, cfg: {cfg:?}}}")
+                writeln!(f, "XGbeCfgQueryReply {{msg_id: {msg_id}, nports: {nports}, ");
+                writeln!(f, "cfg:[");
+                for x in cfg {
+                    writeln!(f, "{}", x);
+                }
+                writeln!(f, "]}}")
             }
         }?;
         writeln!(f, "=====================")
