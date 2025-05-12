@@ -93,6 +93,17 @@ fn main() {
 
             PwrCtrl { msg_id, .. } => PwrCtrlReply { msg_id },
 
+            XGbeCfgSingle { msg_id, port_id:_, cfg:_ }=>XGbeCfgSingleReply { msg_id: msg_id },
+
+            XGbeCfgQuery { msg_id }=>XGbeCfgQueryReply { msg_id: msg_id, nports: 4, cfg: vec![sdaa_ctrl::ctrl_msg::XGbeCfg{
+                dst_ip:[192,168,4,10],
+                dst_mac:[0xaa,0xbb,0xcc,0xdd,0xee,0xff],
+                dst_port:3000,
+                src_ip:[192,168,10,11],
+                src_mac:[0xaa,0xbb,0xcc,0xdd,0xee,0xfe],
+                src_port:3000,
+            }; 4] },
+
             x => {
                 let desc = "invalid".to_string().as_bytes().to_vec();
                 InvalidMsg {
