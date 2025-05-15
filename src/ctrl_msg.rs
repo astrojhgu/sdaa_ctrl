@@ -422,10 +422,10 @@ impl Display for CtrlMsg {
             }
 
             CtrlMsg::XGbeCfgQueryReply { msg_id, nports, cfg }=>{
-                writeln!(f, "XGbeCfgQueryReply {{msg_id: {msg_id}, nports: {nports}, ");
-                writeln!(f, "cfg:[");
+                writeln!(f, "XGbeCfgQueryReply {{msg_id: {msg_id}, nports: {nports}, ")?;
+                writeln!(f, "cfg:[")?;
                 for x in cfg {
-                    writeln!(f, "{}", x);
+                    writeln!(f, "{}", x)?;
                 }
                 writeln!(f, "]}}")
             }
