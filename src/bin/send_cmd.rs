@@ -1,7 +1,7 @@
 use clap::Parser;
 use sdaa_ctrl::ctrl_msg::{send_cmd, CtrlMsg};
 use serde_yaml::from_reader;
-use std::{fs::File, time::Duration};
+use std::{fmt::Display, fs::File, time::Duration};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -32,7 +32,26 @@ struct Args {
     debug_level: u32,
 }
 
-fn main() {
+#[derive(Debug)]
+
+enum MsgError {
+    NotAllReplied,
+    HasInvalidReply,
+}
+
+impl Display for MsgError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MsgError::NotAllReplied => write!(f, "not all replied"),
+            MsgError::HasInvalidReply => write!(f, "has invalid reply"),
+        }
+    }
+}
+
+
+impl std::error::Error for MsgError {}
+
+fn main()->Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let debug_level = args.debug_level;
 
@@ -52,6 +71,7 @@ fn main() {
             for (addr, msg_id) in &summary.no_reply {
                 println!("{:?} {}", addr, msg_id);
             }
+            return Err(Box::new(MsgError::NotAllReplied));
         }
 
         if !summary.invalid_reply.is_empty() {
@@ -59,6 +79,8 @@ fn main() {
             for (a, r) in summary.invalid_reply {
                 println!("{} {}", a, r);
             }
+            return Err(Box::new(MsgError::HasInvalidReply));
         }
     }
+    Ok(())
 }
