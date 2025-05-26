@@ -245,7 +245,15 @@ impl Display for CtrlMsg {
                 health,
             } => {
                 write!(f, "QueryReply{{msg_id: {msg_id}, fm_ver: 0x{fm_ver:x}, tick_cnt1: {tick_cnt1}, tick_cnt2: {tick_cnt2}, trans_state: 0x{trans_state:x}, locked: 0x{locked:x}, Health: {health:?}")?;
-                writeln!(f, "}}")
+                writeln!(f, "}}")?;
+                if *locked & 0x00_00_00_0f!=0x0f{
+                    writeln!(f, "Lock stat abnormal!")?;
+                }
+                if tick_cnt2-tick_cnt1!=10_000_000{
+                    writeln!(f, "Warning, tick cnt diff != 10M ")
+                }else{
+                    writeln!(f, "tick cnt diff OK")
+                }
             }
             CtrlMsg::Sync { msg_id } => {
                 writeln!(f, "Sync {{msg_id: {msg_id}}}")

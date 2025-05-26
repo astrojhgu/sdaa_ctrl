@@ -1,5 +1,5 @@
 use clap::Parser;
-use sdaa_ctrl::ctrl_msg::{send_cmd, CtrlMsg};
+use sdaa_ctrl::ctrl_msg::{self, send_cmd, CtrlMsg};
 use serde_yaml::from_reader;
 use std::{fmt::Display, fs::File, time::Duration};
 
@@ -37,6 +37,7 @@ struct Args {
 enum MsgError {
     NotAllReplied,
     HasInvalidReply,
+    StatAbnormal,
 }
 
 impl Display for MsgError {
@@ -44,6 +45,7 @@ impl Display for MsgError {
         match self {
             MsgError::NotAllReplied => write!(f, "not all replied"),
             MsgError::HasInvalidReply => write!(f, "has invalid reply"),
+            MsgError::StatAbnormal => write!(f, "state abnormal"),
         }
     }
 }
@@ -64,6 +66,17 @@ fn main()->Result<(), Box<dyn std::error::Error>> {
             Some(Duration::from_secs(args.timeout)),
             debug_level,
         );
+
+        for (_a,msg) in &summary.normal_reply{
+            if let ctrl_msg::CtrlMsg::QueryReply { msg_id:_, fm_ver:_, tick_cnt1, tick_cnt2, trans_state:_, locked, health:_ }=msg.clone(){
+                println!("{}", tick_cnt2-tick_cnt1);
+                if tick_cnt2-tick_cnt1!=10_000_000 || locked&0x00_00_00_0f!=0x0f{
+                    return Err(Box::new(MsgError::StatAbnormal))
+                }
+            }
+        }
+        
+
         if summary.no_reply.is_empty() {
             println!("all replied");
         } else {
