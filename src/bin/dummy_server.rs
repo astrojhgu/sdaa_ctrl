@@ -22,12 +22,12 @@ fn main() {
     loop {
         let mut buf = vec![0_u8; 9000];
         let (sz, addr) = socket.recv_from(&mut buf).unwrap();
-        println!("received {} Bytes from {}", sz, addr);
+        println!("received {sz} Bytes from {addr}");
         print_bytes(&buf[..sz]);
         let mut cursor = Cursor::new(buf);
         let msg = CtrlMsg::read(&mut cursor).unwrap();
-        println!("{:?}", msg);
-        println!("{}", msg);
+        //println!("{msg:?}");
+        println!("{msg}");
 
         let reply = match msg {
             Query { msg_id } => QueryReply {

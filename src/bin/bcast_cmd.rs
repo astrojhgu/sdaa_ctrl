@@ -49,13 +49,13 @@ fn main() {
         println!("replied:");
 
         for (a, r) in &summary.normal_reply {
-            println!("{} \n{}", a, r);
+            println!("{a} \n{r}");
         }
 
         if !summary.invalid_reply.is_empty() {
             println!("Invalid reply:");
             for (a, r) in summary.invalid_reply {
-                println!("{} \n{}", a, r);
+                println!("{a} \n{r}");
             }
         }
     }

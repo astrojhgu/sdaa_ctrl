@@ -82,7 +82,7 @@ fn main()->Result<(), Box<dyn std::error::Error>> {
         } else {
             println!("not replied:");
             for (addr, msg_id) in &summary.no_reply {
-                println!("{:?} {}", addr, msg_id);
+                println!("{addr:?} {msg_id}");
             }
             return Err(Box::new(MsgError::NotAllReplied));
         }
@@ -90,7 +90,7 @@ fn main()->Result<(), Box<dyn std::error::Error>> {
         if !summary.invalid_reply.is_empty() {
             println!("Invalid reply:");
             for (a, r) in summary.invalid_reply {
-                println!("{} {}", a, r);
+                println!("{a} {r}");
             }
             return Err(Box::new(MsgError::HasInvalidReply));
         }

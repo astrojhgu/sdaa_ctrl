@@ -264,7 +264,7 @@ impl Display for CtrlMsg {
             CtrlMsg::XGbeCfg { msg_id, cfg } => {
                 writeln!(f, "XGbeCfg{{msg_id: {msg_id}")?;
                 for x in cfg {
-                    writeln!(f, "{}", x)?;
+                    writeln!(f, "{x}")?;
                 }
                 writeln!(f, "}}")
             }
@@ -433,7 +433,7 @@ impl Display for CtrlMsg {
                 writeln!(f, "XGbeCfgQueryReply {{msg_id: {msg_id}, nports: {nports}, ")?;
                 writeln!(f, "cfg:[")?;
                 for x in cfg {
-                    writeln!(f, "{}", x)?;
+                    writeln!(f, "{x}")?;
                 }
                 writeln!(f, "]}}")
             }
@@ -721,7 +721,7 @@ where
     );
     print_bytes(&buf);
 
-    println!("{:?}", cmd);
+    println!("{cmd:?}");
 
     let mut buf = vec![0_u8; 9000];
     while let Ok((l, a)) = socket.recv_from(&mut buf) {

@@ -27,7 +27,7 @@ pub unsafe extern "C" fn find_device(
     let summary = bcast_cmd(
         query,
         addr,
-        format!("0.0.0.0:{}", local_port),
+        format!("0.0.0.0:{local_port}"),
         Some(Duration::from_secs(1)),
         1,
     );
@@ -60,7 +60,7 @@ pub unsafe extern "C" fn make_device(ip: u32, local_port: u16) -> bool {
     let ip = Ipv4Addr::from(ip);
     let addr = SocketAddrV4::new(ip, 3000);
 
-    let local_addr = format!("0.0.0.0:{}", local_port);
+    let local_addr = format!("0.0.0.0:{local_port}");
 
     let cmd = CtrlMsg::Init {
         msg_id: 0,
@@ -68,7 +68,7 @@ pub unsafe extern "C" fn make_device(ip: u32, local_port: u16) -> bool {
     };
     let summary = send_cmd(cmd, &[addr], &local_addr, Some(Duration::from_secs(5)), 1);
 
-    println!("{:?}", summary);
+    println!("{summary:?}");
 
     // if summary.normal_reply.len() != 1 {
     //     return false;
@@ -91,7 +91,7 @@ pub unsafe extern "C" fn unmake_device(ip: u32, local_port: u16) -> bool {
     let ip = Ipv4Addr::from(ip);
     let addr = SocketAddrV4::new(ip, 3000);
 
-    let local_addr = format!("0.0.0.0:{}", local_port);
+    let local_addr = format!("0.0.0.0:{local_port}");
 
     let cmd = CtrlMsg::StreamStop { msg_id: 0 };
 
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn start_stream(ip: u32, local_port: u16) -> bool {
     let ip = Ipv4Addr::from(ip);
     let addr = SocketAddrV4::new(ip, 3000);
 
-    let local_addr = format!("0.0.0.0:{}", local_port);
+    let local_addr = format!("0.0.0.0:{local_port}");
 
     let cmd = CtrlMsg::StreamStart { msg_id: 0 };
 
