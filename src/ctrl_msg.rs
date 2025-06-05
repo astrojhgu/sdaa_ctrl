@@ -310,7 +310,7 @@ impl Display for CtrlMsg {
                 len: _,
                 payload,
             } => {
-                write!(f, "I2CWriteReg{{ msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, reg_addr: {reg_addr:x}")?;
+                write!(f, "I2CWriteReg{{ msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, reg_addr: 0x{reg_addr:x}")?;
                 for &x in payload {
                     write!(f, " {x:02x}")?;
                 }
@@ -353,7 +353,7 @@ impl Display for CtrlMsg {
                 reg_addr,
                 nbytes,
             } => {
-                writeln!(f, "I2CReadReg{{msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, reg_addr: {reg_addr:x} nbytes:{nbytes}}}")
+                writeln!(f, "I2CReadReg{{msg_id: {msg_id}, dev_addr: 0x{dev_addr:x}, reg_addr: 0x{reg_addr:x} nbytes:{nbytes}}}")
             }
             CtrlMsg::I2CReadRegReply {
                 msg_id,
@@ -581,7 +581,7 @@ where
         );
         print_bytes(&buf);
 
-        println!("{:?}", cmd);
+        println!("{cmd}");
 
         let mut buf = vec![0_u8; 9000];
         while let Ok((l, a)) = socket.recv_from(&mut buf) {
