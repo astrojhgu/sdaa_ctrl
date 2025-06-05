@@ -1,10 +1,10 @@
 [package]
 name = "sdaa_ctrl"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-binrw = "0.14.1"
+binrw = "0.15.0"
 clap = { version = '4.5.37', features = ['derive'] }
 serde = { version = '1.0.144', features = ['derive'] }
 serde_yaml = '0.9.13'
@@ -13,7 +13,7 @@ rand = '0.9.1'
 
 [build-dependencies]
 bindgen = "0.71.1"
-cbindgen = "0.28.0"
+cbindgen = "0.29.0"
 
 [lib]
 name = "sdaa_ctrl"

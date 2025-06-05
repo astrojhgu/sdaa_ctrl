@@ -10,14 +10,14 @@ use crate::ctrl_msg::{bcast_cmd, send_cmd, CtrlMsg};
 /// # Safety
 ///
 /// This function should not be called before the horsemen are ready.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn find_device(
     addr: u32,
     result: *mut u32,
     max_n: usize,
     local_port: u16,
 ) -> usize {
-    let result = from_raw_parts_mut(result, max_n);
+    let result = unsafe{from_raw_parts_mut(result, max_n)};
     let ip = Ipv4Addr::from(addr);
 
     let addr = SocketAddrV4::new(ip, 3000);
@@ -55,7 +55,7 @@ pub unsafe extern "C" fn find_device(
 /// # Safety
 ///
 /// This function should not be called before the horsemen are ready.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn make_device(ip: u32, local_port: u16) -> bool {
     let ip = Ipv4Addr::from(ip);
     let addr = SocketAddrV4::new(ip, 3000);
@@ -86,7 +86,7 @@ pub unsafe extern "C" fn make_device(ip: u32, local_port: u16) -> bool {
 /// # Safety
 ///
 /// This function should not be called before the horsemen are ready.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn unmake_device(ip: u32, local_port: u16) -> bool {
     let ip = Ipv4Addr::from(ip);
     let addr = SocketAddrV4::new(ip, 3000);
@@ -106,7 +106,7 @@ pub unsafe extern "C" fn unmake_device(ip: u32, local_port: u16) -> bool {
 /// # Safety
 ///
 /// This function should not be called before the horsemen are ready.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn start_stream(ip: u32, local_port: u16) -> bool {
     let ip = Ipv4Addr::from(ip);
     let addr = SocketAddrV4::new(ip, 3000);
