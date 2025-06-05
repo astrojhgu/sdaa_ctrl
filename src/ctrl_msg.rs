@@ -281,7 +281,7 @@ impl Display for CtrlMsg {
             } => {
                 write!(f, "I2CScanReply{{msg_id: {msg_id}, ndev: {ndev}, payload: ")?;
                 for &x in payload {
-                    write!(f, "{x:02x} ")?;
+                    write!(f, "0x{x:02x} ")?;
                 }
                 writeln!(f, "}}")
             }
