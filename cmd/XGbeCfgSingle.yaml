@@ -1,0 +1,10 @@
+- !XGbeCfgSingle
+  msg_id: 287454020
+  port_id: 2
+  cfg:
+    dst_mac: [0x58,0x47,0xca,0x7a,0x8f,0xc2]
+    src_mac: [7,8,9,10,11,12]
+    dst_ip:  [192,168,10,10]
+    src_ip:  [192,168,10,100]
+    dst_port: 3000
+    src_port: 3001
