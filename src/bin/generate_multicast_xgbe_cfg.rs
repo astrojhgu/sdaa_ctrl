@@ -1,10 +1,8 @@
-use std::{net::SocketAddrV4, fs::File};
+use std::{fs::File, net::SocketAddrV4};
 use serde_yaml::{from_reader, to_writer};
 use clap::Parser;
 use sdaa_ctrl::ctrl_msg::CtrlMsg;
 
-use pnet::datalink::{self, NetworkInterface};
-use std::net::IpAddr;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -25,15 +23,29 @@ struct Args {
     oname: String,
 }
 
-fn find_interface_by_ip(target_ip: IpAddr) -> Option<NetworkInterface> {
-    for iface in datalink::interfaces() {
-        for ip in iface.ips.iter().map(|p| p.ip()) {
-            if ip == target_ip {
-                return Some(iface);
-            }
-        }
+
+fn multicast_mac_from_socketaddr(addr: &SocketAddrV4) -> Option<[u8; 6]> {
+    let ip = addr.ip().octets();
+
+    // 检查是否是合法的组播地址（224.0.0.0 ~ 239.255.255.255）
+    if ip[0] < 224 || ip[0] > 239 {
+        return None;
     }
-    None
+
+    // 取 IP 地址的低 23 位（保留顺序）
+    let ip_u32 = u32::from(*addr.ip());
+    let low_23 = ip_u32 & 0x7FFFFF;
+
+    let mac = [
+        0x01,
+        0x00,
+        0x5e,
+        ((low_23 >> 16) & 0x7F) as u8, // 只取低 7 位
+        ((low_23 >> 8) & 0xFF) as u8,
+        (low_23 & 0xFF) as u8,
+    ];
+
+    Some(mac)
 }
 
 pub fn main() {
@@ -48,20 +60,18 @@ pub fn main() {
 
     let cfg: Vec<CtrlMsg> = from_reader(File::open(&args.iname).expect("file not open")).expect("failed to load cfg");
     if let CtrlMsg::XGbeCfgSingle { msg_id, port_id, mut cfg }=cfg[0]{
-        if let Some(addr)=dest_addr{
+                if let Some(addr)=dest_addr{
             cfg.dst_ip.copy_from_slice(&addr.ip().octets());
             cfg.dst_port=addr.port();
-            let iface=find_interface_by_ip(IpAddr::V4(addr.ip().to_owned())).unwrap();
-            let mac=iface.mac.unwrap();
-            println!("dest mac : {mac}");
-            cfg.dst_mac.copy_from_slice(&mac.octets());
+            let mac=multicast_mac_from_socketaddr(&addr).unwrap();
+            println!("dest mac : {mac:?}");
+            cfg.dst_mac.copy_from_slice(&mac);
         }
         if let Some(addr)=src_addr{
             cfg.src_ip.copy_from_slice(&addr.ip().octets());
             cfg.src_port=addr.port();
         }
         let port_id=args.port_id.unwrap_or(port_id);
-        
         to_writer(File::create(&args.oname).expect("cannot create file"), 
         &vec![CtrlMsg::XGbeCfgSingle{msg_id, port_id, cfg}]
     ).expect("failed to write cfg")
