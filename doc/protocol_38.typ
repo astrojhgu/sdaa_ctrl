@@ -24,6 +24,8 @@
 
 #include "xgbe.typ"
 
+#include "xgbe_query.typ"
+
 //#include "i2c.typ"
 
 #include "stream_ctrl.typ"
@@ -32,6 +34,6 @@
 
 //#include "suspend.typ"
 
-//#include "init.typ"
+#include "init.typ"
 
 //#bibliography("ref.bib")
