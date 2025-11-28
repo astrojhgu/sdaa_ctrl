@@ -79,6 +79,12 @@ pub enum Health {
         #[br(count=nhealth)]
         payload: Vec<u32>,
     },
+
+    #[brw(magic(0x00_00_01_fe_u32))]
+    T510Health{
+        rfdc_restart_cnt: u32,
+        temperature: i32,
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -181,14 +187,12 @@ pub enum CtrlMsg {
     #[brw(magic(0xff_00_02_05_u32))]
     StreamStopReply { msg_id: u32 },
     #[brw(magic(0x06_u32))]
-    VGACtrl {
+    BitShift {
         msg_id: u32,
-        nvga: u32,
-        #[br(count=nvga)]
-        gains: Vec<u32>,
+        shift_bits: u32,
     },
     #[brw(magic(0xff_00_00_06_u32))]
-    VGACtrlReply { msg_id: u32, err_code: u32 },
+    BitShiftReply { msg_id: u32 },
     #[brw(magic(0x07_u32))]
     PwrCtrl { msg_id: u32, op_code: u32 },
     #[brw(magic(0xff_00_00_07_u32))]
@@ -214,6 +218,28 @@ pub enum CtrlMsg {
         #[br(count=nports)]
         cfg:Vec<XGbeCfg>
     },
+    #[brw(magic(0x00_00_00_0c_u32))]
+    SetClk{
+        msg_id: u32,
+        clk_src: u32,
+        pps_src: u32,
+    },
+    #[brw(magic(0xff_00_00_0c_u32))]
+    SetClkReply{
+        msg_id: u32,
+        clk_state: u32,
+    },
+    #[brw(magic(0x00_00_00_0d_u32))]
+    MixerSet{
+        msg_id: u32,
+        freq: f64,
+        phase: f64,
+    },
+    #[brw(magic(0xff_00_00_0d_u32))]
+    MixerSetReply{
+        msg_id: u32,
+    }
+
 }
 
 impl Display for CtrlMsg {
@@ -382,21 +408,17 @@ impl Display for CtrlMsg {
             CtrlMsg::StreamStopReply { msg_id } => {
                 writeln!(f, "StreamStopReply{{msg_id: {msg_id}}}")
             }
-            CtrlMsg::VGACtrl {
+            CtrlMsg::BitShift {
                 msg_id,
-                nvga: _,
-                gains,
+                shift_bits
             } => {
-                write!(f, "VGACtrl{{ msg_id: {msg_id},")?;
-                for &x in gains {
-                    write!(f, "{x}")?;
-                }
+                write!(f, "Bitshift{{ msg_id: {msg_id} shift_bits:{shift_bits},")?;
                 writeln!(f, "}}")
             }
-            CtrlMsg::VGACtrlReply { msg_id, err_code } => {
+            CtrlMsg::BitShiftReply { msg_id} => {
                 writeln!(
                     f,
-                    "VGACtrlReply{{msg_id: {msg_id}, err_code: 0x{err_code:x}}}"
+                    "Bitshift{{msg_id: {msg_id}}}"
                 )
             }
             CtrlMsg::PwrCtrl { msg_id, op_code } => {
@@ -437,6 +459,20 @@ impl Display for CtrlMsg {
                 }
                 writeln!(f, "]}}")
             }
+
+            CtrlMsg::SetClk { msg_id, clk_src, pps_src }=>{
+                writeln!(f, "SetClk {{msg_id: {msg_id}, clk_src: {clk_src}, pps_src:{pps_src} }}")
+            }
+
+            CtrlMsg::SetClkReply { msg_id, clk_state }=>{
+                writeln!(f, "SetClkReply {{msg_id: {msg_id}, clk_state: {clk_state}}}")
+            }
+            CtrlMsg::MixerSet { msg_id, freq, phase }=>{
+                writeln!(f, "MixerSet {{msg_id: {msg_id}, freq: {freq}, phase:{phase} }}")
+            }
+            CtrlMsg::MixerSetReply { msg_id }=>{
+                writeln!(f, "MixerSetReply {{msg_id: {msg_id}}}")
+            }
         }?;
         writeln!(f, "=====================")
     }
@@ -467,8 +503,8 @@ impl CtrlMsg {
             StreamStartReply { msg_id } => *msg_id = mid,
             StreamStop { msg_id } => *msg_id = mid,
             StreamStopReply { msg_id } => *msg_id = mid,
-            VGACtrl { msg_id, .. } => *msg_id = mid,
-            VGACtrlReply { msg_id, .. } => *msg_id = mid,
+            BitShift { msg_id, .. } => *msg_id = mid,
+            BitShiftReply { msg_id, .. } => *msg_id = mid,
             PwrCtrl { msg_id, .. } => *msg_id = mid,
             PwrCtrlReply { msg_id, .. } => *msg_id = mid,
             Init { msg_id, .. } => *msg_id = mid,
@@ -477,6 +513,10 @@ impl CtrlMsg {
             XGbeCfgQueryReply { msg_id, nports:_, cfg:_a }=>*msg_id=mid,
             XGbeCfgSingle { msg_id, port_id:_, cfg:_ }=>*msg_id=mid,
             XGbeCfgSingleReply { msg_id }=>*msg_id=mid,
+            SetClk{ msg_id, .. }=>*msg_id=mid,
+            SetClkReply{ msg_id, .. }=>*msg_id=mid,
+            MixerSet{ msg_id, .. }=>*msg_id=mid,
+            MixerSetReply{ msg_id }=>*msg_id=mid,
         }
     }
 
@@ -504,8 +544,8 @@ impl CtrlMsg {
             StreamStartReply { msg_id } => *msg_id,
             StreamStop { msg_id } => *msg_id,
             StreamStopReply { msg_id } => *msg_id,
-            VGACtrl { msg_id, .. } => *msg_id,
-            VGACtrlReply { msg_id, .. } => *msg_id,
+            BitShift { msg_id, .. } => *msg_id,
+            BitShiftReply { msg_id, .. } => *msg_id,
             PwrCtrl { msg_id, .. } => *msg_id,
             PwrCtrlReply { msg_id } => *msg_id,
             Init {
@@ -518,6 +558,10 @@ impl CtrlMsg {
             XGbeCfgQueryReply { msg_id, nports:_, cfg:_a }=>*msg_id,
             XGbeCfgSingle { msg_id, port_id:_, cfg:_ }=>*msg_id,
             XGbeCfgSingleReply { msg_id }=>*msg_id,
+            SetClk{ msg_id, .. }=>*msg_id,
+            SetClkReply{ msg_id, .. }=>*msg_id,
+            MixerSet{ msg_id, .. }=>*msg_id,
+            MixerSetReply{ msg_id }=>*msg_id,
         }
     }
 }
